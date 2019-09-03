@@ -3,7 +3,7 @@ package sqlinterface
 import (
     "database/sql"
     "fmt"
-    _ "github.com/go-sqldriver/mysql"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 // DB : the database struct to store information about the connection
