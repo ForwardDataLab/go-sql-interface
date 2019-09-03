@@ -67,8 +67,10 @@ func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
         rowAccess.Table +
         " WHERE " + rowAccess.Column + " = $1"
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
-    for index, row_index := range rowAccess.Indices {
-        currentDatabase.QueryRow(queryString, row_index).Scan(&(fetchedArr[index]).USER_NAME,
+    for index, rowIndex := range rowAccess.Indices {
+        row := currentDatabase.QueryRow(queryString, rowIndex)
+        print(row)
+        row.Scan(&(fetchedArr[index]).USER_NAME,
             &(fetchedArr[index]).INDEX_COL)
     }
     return fetchedArr
