@@ -20,22 +20,26 @@ type RowAccess struct {
     Indices []int
 }
 
+type rowStructure struct {
+    USER_NAME string
+    INDEX_COL int
+}
+
 // InterfaceTest : tests the interface import
 func InterfaceTest() int {
     return 5
 }
 
 // GetRows : fetches rows from DB
-func (db DB) GetRows(rowAccess RowAccess) []interface{} {
+func (db DB) GetRows(rowAccess RowAccess) []rowStructure {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password)
     queryString := "SELECT * FROM " +
         rowAccess.DatabaseName + "." + rowAccess.Table +
         " WHERE " + rowAccess.Column + " = ?"
     statement, _ := currentDatabase.Prepare(queryString)
-    fetchedArr := make([]interface{}, len(rowAccess.Indices))
+    fetchedArr := make([]rowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
-        fetchedArr[index] = new(sql.RawBytes)
-        statement.QueryRow(rowIndex).Scan(fetchedArr[index])
+        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]))
     }
     return fetchedArr
 }
