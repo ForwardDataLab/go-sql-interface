@@ -3,6 +3,7 @@ package sqlinterface
 import (
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
+    _ "github.com/lib/pq"
 )
 
 // DB : the database struct to store information about the connection
@@ -20,7 +21,8 @@ type RowAccess struct {
     Indices []int
 }
 
-type rowStructure struct {
+// RowStructure : struct to represent the row structure of the database
+type RowStructure struct {
     USER_NAME string
     INDEX_COL int
 }
@@ -31,14 +33,41 @@ func InterfaceTest() int {
 }
 
 // GetRows : fetches rows from DB
-func (db DB) GetRows(rowAccess RowAccess) []rowStructure {
+func (db DB) GetRows(rowAccess RowAccess) []RowStructure {
+    if(db.DbType == "mysql") {
+        return mysqlGetRows(db, rowAccess)
+    } else if (db.DbType == "postgres") {
+        return postgresGetRows(db, rowAccess)
+    } else {
+        return nil
+    }
+}
+
+func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + rowAccess.DatabaseName)
     queryString := "SELECT * FROM " +
         rowAccess.Table +
         " WHERE " + rowAccess.Column + " = ?"
     statement, _ := currentDatabase.Prepare(queryString)
-    fetchedArr := make([]rowStructure, len(rowAccess.Indices))
+    fetchedArr := make([]RowStructure, len(rowAccess.Indices))
+    for index, rowIndex := range rowAccess.Indices {
+        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]).USER_NAME,
+            &(fetchedArr[index]).INDEX_COL)
+    }
+    return fetchedArr
+}
+
+func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
+    currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
+        " password=" + db.Password +
+        " dbname=" + rowAccess.DatabaseName +
+        "sslmode=disable")
+    queryString := "SELECT * FROM " +
+        rowAccess.Table +
+        " WHERE " + rowAccess.Column + " = $1"
+    statement, _ := currentDatabase.Prepare(queryString)
+    fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
         statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]).USER_NAME,
             &(fetchedArr[index]).INDEX_COL)
