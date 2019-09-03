@@ -2,7 +2,6 @@ package sqlinterface
 
 import (
     "database/sql"
-    "fmt"
     _ "github.com/go-sql-driver/mysql"
 )
 
@@ -33,16 +32,16 @@ func InterfaceTest() int {
 
 // GetRows : fetches rows from DB
 func (db DB) GetRows(rowAccess RowAccess) []rowStructure {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + rowAccess.DatabaseName)
-    fmt.Print(err)
     queryString := "SELECT * FROM " +
         rowAccess.Table +
         " WHERE " + rowAccess.Column + " = ?"
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]rowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
-        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]))
+        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]).USER_NAME,
+            &(fetchedArr[index]).INDEX_COL)
     }
     return fetchedArr
 }
