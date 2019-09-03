@@ -29,5 +29,5 @@ func (rowStruct RowAccess) GetRows() {
     fmt.Println(rowStruct.DatabaseName)
     fmt.Println(rowStruct.Table)
     fmt.Println(rowStruct.Column)
-    fmt.Println(rowStruct.indices)
+    fmt.Println(rowStruct.Indices)
 }
