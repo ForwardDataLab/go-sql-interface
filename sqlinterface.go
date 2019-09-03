@@ -16,7 +16,7 @@ type RowAccess struct {
     DatabaseName string
     Table string
     Column string
-    Index int
+    indices []int
 }
 
 // InterfaceTest : tests the interface import
@@ -29,5 +29,5 @@ func (rowStruct RowAccess) GetRows() {
     fmt.Println(rowStruct.DatabaseName)
     fmt.Println(rowStruct.Table)
     fmt.Println(rowStruct.Column)
-    fmt.Println(rowStruct.Index)
+    fmt.Println(rowStruct.indices)
 }
