@@ -33,8 +33,9 @@ func (db DB) GetRows(rowAccess RowAccess) []interface{} {
         " WHERE " + rowAccess.Column + " = ?"
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]interface{}, len(rowAccess.Indices))
-    for _, index := range rowAccess.Indices {
-        statement.QueryRow(index).Scan(&fetchedArr[index])
+    for index, rowIndex := range rowAccess.Indices {
+        fetchedArr[index] = new(sql.RawBytes)
+        statement.QueryRow(rowIndex).Scan(fetchedArr[index])
     }
     return fetchedArr
 }
