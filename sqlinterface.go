@@ -65,7 +65,7 @@ func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
         "sslmode=disable")
     queryString := "SELECT * FROM " +
         rowAccess.Table +
-        " WHERE " + rowAccess.Column + " = $1"
+        " WHERE " + rowAccess.Column + " = ?"
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
