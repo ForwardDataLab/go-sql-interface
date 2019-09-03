@@ -16,7 +16,7 @@ type RowAccess struct {
     DatabaseName string
     Table string
     Column string
-    indices []int
+    Indices []int
 }
 
 // InterfaceTest : tests the interface import
