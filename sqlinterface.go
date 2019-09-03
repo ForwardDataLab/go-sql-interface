@@ -13,6 +13,7 @@ type DB struct {
 
 // RowAccess : struct to request rows from the database
 type RowAccess struct {
+    DatabaseName string
     Table string
     Column string
     Index int
@@ -25,5 +26,8 @@ func InterfaceTest() int {
 
 // GetRows : fetches rows from DB
 func (rowStruct RowAccess) GetRows() {
+    fmt.Println(rowStruct.DatabaseName)
+    fmt.Println(rowStruct.Table)
     fmt.Println(rowStruct.Column)
+    fmt.Println(rowStruct.Index)
 }
