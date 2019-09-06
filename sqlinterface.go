@@ -1,16 +1,5 @@
 package sqlinterface
 
-import (
-    "database/sql"
-    _ "github.com/go-sql-driver/mysql"
-    _ "github.com/lib/pq"
-)
-
-// InterfaceTest : tests the interface import
-func InterfaceTest() int {
-    return 5
-}
-
 // GetRows : fetches rows from DB
 func (db DB) GetRows(rowAccess RowAccess) []RowStructure {
     if(db.DbType == "mysql") {
@@ -22,37 +11,40 @@ func (db DB) GetRows(rowAccess RowAccess) []RowStructure {
     }
 }
 
-func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + rowAccess.DatabaseName)
-    queryString := "SELECT * FROM " +
-        rowAccess.Table +
-        " WHERE " + rowAccess.Column + " = ?"
-    statement, _ := currentDatabase.Prepare(queryString)
-    fetchedArr := make([]RowStructure, len(rowAccess.Indices))
-    for index, rowIndex := range rowAccess.Indices {
-        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]).USER_NAME,
-            &(fetchedArr[index]).INDEX_COL)
+// InitDB : initializes the database upon initial creation of workspace
+func (db DB) InitDB() {
+    // add a column called index_col
+    // ALTER TABLE `myTable` ADD COLUMN `id` INT AUTO_INCREMENT UNIQUE
+    if(db.DbType == "mysql") {
+        return mysqlInitDB()
+    } else if (db.DbType == "postgres") {
+        return postgresInitDB()
+    } else {
+        return nil
     }
-    return fetchedArr
 }
 
-func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
-    currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
-        " password=" + db.Password +
-        " dbname=" + rowAccess.DatabaseName +
-        "sslmode=disable")
-    queryString := "SELECT * FROM " +
-        rowAccess.Table +
-        " WHERE " + rowAccess.Column + " = 1"
-    fetchedArr := make([]RowStructure, len(rowAccess.Indices))
-    for index, rowIndex := range rowAccess.Indices {
-        row := currentDatabase.QueryRow(queryString, rowIndex)
-        err := row.Scan(&(fetchedArr[index]).USER_NAME,
-            &(fetchedArr[index]).INDEX_COL)
-        if err != nil {
-            print(err)
-        }
+// InsertRow : inserts a new row into the database
+func (db DB) InsertRow(rowStructure RowStructure) {
+    // insert a row into db defined by rowStructure
+    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
+    if(db.DbType == "mysql") {
+        return mysqlInsertRow(rowStructure)
+    } else if (db.DbType == "postgres") {
+        return postgresInsertRow(rowStructure)
+    } else {
+        return nil
     }
-    return fetchedArr
+}
+
+// DeleteRow : delets a row from the database
+func (db DB) DeleteRow(index int) {
+    // DELETE FROM table_name WHERE index_col = index
+    if(db.DbType == "mysql") {
+        return mysqlDeleteRow(index)
+    } else if (db.DbType == "postgres") {
+        return postgresDeleteRow(index)
+    } else {
+        return nil
+    }
 }
