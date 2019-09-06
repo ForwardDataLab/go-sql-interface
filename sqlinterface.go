@@ -7,6 +7,7 @@ func (db DB) GetRows(rowAccess RowAccess) []RowStructure {
     } else if (db.DbType == "postgres") {
         return postgresGetRows(db, rowAccess)
     } else {
+        // should panic or do proper error throwing
         return nil
     }
 }
@@ -16,16 +17,16 @@ func (db DB) InitDB() {
     // add a column called index_col
     // ALTER TABLE `myTable` ADD COLUMN `id` INT AUTO_INCREMENT UNIQUE
     if(db.DbType == "mysql") {
-        return mysqlInitDB()
+        mysqlInitDB()
     } else if (db.DbType == "postgres") {
-        return postgresInitDB()
+        postgresInitDB()
     } else {
-        return nil
+        // should panic or do proper error throwing
     }
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(rowStructure RowStructure) {
+func (db DB) InsertRow(rowStructure RowStructure) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
@@ -33,7 +34,8 @@ func (db DB) InsertRow(rowStructure RowStructure) {
     } else if (db.DbType == "postgres") {
         return postgresInsertRow(rowStructure)
     } else {
-        return nil
+        // should panic or do proper error throwing
+        return -1
     }
 }
 
@@ -41,10 +43,10 @@ func (db DB) InsertRow(rowStructure RowStructure) {
 func (db DB) DeleteRow(index int) {
     // DELETE FROM table_name WHERE index_col = index
     if(db.DbType == "mysql") {
-        return mysqlDeleteRow(index)
+        mysqlDeleteRow(index)
     } else if (db.DbType == "postgres") {
-        return postgresDeleteRow(index)
+        postgresDeleteRow(index)
     } else {
-        return nil
+        // should panic or do proper error throwing
     }
 }

@@ -5,6 +5,9 @@ import (
     _ "github.com/go-sql-driver/mysql"
 )
 
+func mysqlInitDB(){
+}
+
 func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + rowAccess.DatabaseName)
@@ -20,7 +23,8 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     return fetchedArr
 }
 
-func mysqlInsertRow(rowStructure RowStructure) {
+func mysqlInsertRow(rowStructure RowStructure) int {
+    return -1
 }
 
 func mysqlDeleteRow(index int) {

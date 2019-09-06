@@ -5,6 +5,9 @@ import (
     _ "github.com/lib/pq"
 )
 
+func postgresInitDB(){
+}
+
 func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
     currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
         " password=" + db.Password +
