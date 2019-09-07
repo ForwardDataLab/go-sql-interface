@@ -23,7 +23,7 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     return fetchedArr
 }
 
-func mysqlInsertRow(rowStructure RowStructure) int {
+func mysqlInsertRow(db DB, rowStructure RowStructure) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
@@ -43,7 +43,7 @@ func mysqlInsertRow(rowStructure RowStructure) int {
     return autoIncrementIndex
 }
 
-func mysqlDeleteRow(index int) {
+func mysqlDeleteRow(db DB, index int) {
     // DELETE FROM table_name WHERE index_col = index
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)

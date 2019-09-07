@@ -43,9 +43,9 @@ func (db DB) InsertRow(rowStructure RowStructure) int {
 func (db DB) DeleteRow(index int) {
     // DELETE FROM table_name WHERE index_col = index
     if(db.DbType == "mysql") {
-        mysqlDeleteRow(index)
+        mysqlDeleteRow(db, index)
     } else if (db.DbType == "postgres") {
-        postgresDeleteRow(index)
+        postgresDeleteRow(db, index)
     } else {
         // should panic or do proper error throwing
     }
