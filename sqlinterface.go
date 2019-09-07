@@ -30,9 +30,9 @@ func (db DB) InsertRow(rowStructure RowStructure) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(rowStructure)
+        return mysqlInsertRow(db, rowStructure)
     } else if (db.DbType == "postgres") {
-        return postgresInsertRow(rowStructure)
+        return postgresInsertRow(db, rowStructure)
     } else {
         // should panic or do proper error throwing
         return -1
