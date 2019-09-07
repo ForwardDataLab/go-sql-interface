@@ -11,10 +11,10 @@ func postgresInitDB(){
 func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
     currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
         " password=" + db.Password +
-        " dbname=" + rowAccess.DatabaseName +
+        " dbname=" + db.DatabaseName +
         "sslmode=disable")
     queryString := "SELECT * FROM " +
-        rowAccess.Table +
+        db.Table +
         " WHERE " + rowAccess.Column + " = 1"
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
