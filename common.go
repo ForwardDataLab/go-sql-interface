@@ -17,7 +17,9 @@ type RowAccess struct {
 
 // RowStructure : struct to represent the row structure of the database
 type RowStructure struct {
-    USER_NAME string
-    INDEX_COL int
+    ID int
+    NAME string
+    Age int
+    Department string
+    GPA float32
 }
-

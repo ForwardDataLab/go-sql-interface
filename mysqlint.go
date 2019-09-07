@@ -17,39 +17,45 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     for index, rowIndex := range rowAccess.Indices {
-        statement.QueryRow(rowIndex).Scan(&(fetchedArr[index]).USER_NAME,
-            &(fetchedArr[index]).INDEX_COL)
+        statement.QueryRow(rowIndex).Scan(
+            &(fetchedArr[index]).ID,
+            &(fetchedArr[index]).NAME,
+            &(fetchedArr[index]).Age,
+            &(fetchedArr[index]).Department,
+            &(fetchedArr[index]).GPA,
+        )
     }
     return fetchedArr
 }
 
 func mysqlInsertRow(db DB, rowStructure RowStructure) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
-    insertQueryString := "INSERT INTO " +
-        db.Table +
-        " (USER_NAME, INDEX_COL) VALUES (?, ?)"
-    insertStatement, _ := currentDatabase.Prepare(insertQueryString)
-    _, _ = insertStatement.Exec(rowStructure.USER_NAME, rowStructure.INDEX_COL)
+    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+    //     "@/" + db.DatabaseName)
+    // insertQueryString := "INSERT INTO " +
+    //     db.Table +
+    //     " (USER_NAME, INDEX_COL) VALUES (?, ?)"
+    // insertStatement, _ := currentDatabase.Prepare(insertQueryString)
+    // _, _ = insertStatement.Exec(rowStructure.USER_NAME, rowStructure.INDEX_COL)
 
-    selectQueryString := "SELECT INDEX_COL FROM " +
-        db.Table +
-        " WHERE USER_NAME = ?"
-    selectStatement, _ := currentDatabase.Prepare(selectQueryString)
+    // selectQueryString := "SELECT INDEX_COL FROM " +
+    //     db.Table +
+    //     " WHERE USER_NAME = ?"
+    // selectStatement, _ := currentDatabase.Prepare(selectQueryString)
 
-    autoIncrementIndex := -1;
-    selectStatement.QueryRow(rowStructure.USER_NAME).Scan(&autoIncrementIndex)
-    return autoIncrementIndex
+    // autoIncrementIndex := -1;
+    // selectStatement.QueryRow(rowStructure.USER_NAME).Scan(&autoIncrementIndex)
+    // return autoIncrementIndex
+    return -1
 }
 
 func mysqlDeleteRow(db DB, index int) {
     // DELETE FROM table_name WHERE index_col = index
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
-    deleteQueryString := "DELETE FROM " +
-        db.Table +
-        "WHERE INDEX_COL = ?"
-    deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
-    _, _ = deleteStatement.Exec(index)
+    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+    //     "@/" + db.DatabaseName)
+    // deleteQueryString := "DELETE FROM " +
+    //     db.Table +
+    //     "WHERE INDEX_COL = ?"
+    // deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
+    // _, _ = deleteStatement.Exec(index)
 }
