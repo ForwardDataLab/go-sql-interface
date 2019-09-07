@@ -28,9 +28,9 @@ func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
     return fetchedArr
 }
 
-func postgresInsertRow(rowStructure RowStructure) int {
+func postgresInsertRow(db DB, rowStructure RowStructure) int {
     return -1
 }
 
-func postgresDeleteRow(index int) {
+func postgresDeleteRow(db DB, index int) {
 }
