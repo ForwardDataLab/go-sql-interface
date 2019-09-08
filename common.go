@@ -12,7 +12,7 @@ type DB struct {
 // RowAccess : struct to request rows from the database
 type RowAccess struct {
     Column string
-    Indices []int
+    Indices []interface{}
 }
 
 // RowStructure : struct to represent the row structure of the database
