@@ -13,17 +13,21 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
         "@/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
-        " WHERE " + rowAccess.Column + " = ?"
+        " WHERE " + rowAccess.Column + " in (/" + strings.Repeat(", ?", len(rowAccess.Indices) - 1) + ")"
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
-    for index, rowIndex := range rowAccess.Indices {
-        statement.QueryRow(rowIndex).Scan(
+    rows, _ := statement.Query(rowAccess.Indices...)
+    defer rows.Close()
+    index := 0
+    for rows.Next() {
+        rows.Scan(
             &(fetchedArr[index]).ID,
             &(fetchedArr[index]).NAME,
             &(fetchedArr[index]).Age,
             &(fetchedArr[index]).Department,
             &(fetchedArr[index]).GPA,
         )
+        index++;
     }
     return fetchedArr
 }
