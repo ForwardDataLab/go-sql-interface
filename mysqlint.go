@@ -2,7 +2,6 @@ package sqlinterface
 
 import (
     "database/sql"
-    "fmt"
     "strings"
     _ "github.com/go-sql-driver/mysql"
 )
@@ -16,10 +15,8 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " in (/" + strings.Repeat(", ?", len(rowAccess.Indices) - 1) + ")"
-    statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
-    rows, _ := statement.Query(rowAccess.Indices...)
-    fmt.Print(rows)
+    rows, _ := currentDatabase.Query(queryString, rowAccess.Indices...)
     defer rows.Close()
     index := 0
     for rows.Next() {
