@@ -2,6 +2,7 @@ package sqlinterface
 
 import (
     "database/sql"
+    "fmt"
     "strings"
     _ "github.com/go-sql-driver/mysql"
 )
