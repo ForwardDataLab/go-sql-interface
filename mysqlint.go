@@ -18,6 +18,7 @@ func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
     statement, _ := currentDatabase.Prepare(queryString)
     fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     rows, _ := statement.Query(rowAccess.Indices...)
+    fmt.Print(rows)
     defer rows.Close()
     index := 0
     for rows.Next() {
