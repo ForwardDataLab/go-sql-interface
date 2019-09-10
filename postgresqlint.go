@@ -8,7 +8,7 @@ import (
 func postgresInitDB(){
 }
 
-func postgresGetRows(db DB, rowAccess RowAccess) []RowStructure {
+func postgresGetRows(db DB, rowAccess RowAccess) [][]string {
     currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
         " password=" + db.Password +
         " dbname=" + db.DatabaseName +

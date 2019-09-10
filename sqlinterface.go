@@ -1,7 +1,7 @@
 package sqlinterface
 
 // GetRows : fetches rows from DB
-func (db DB) GetRows(rowAccess RowAccess) []RowStructure {
+func (db DB) GetRows(rowAccess RowAccess) [][]string {
     if(db.DbType == "mysql") {
         return mysqlGetRows(db, rowAccess)
     } else if (db.DbType == "postgres") {
