@@ -50,3 +50,27 @@ func (db DB) DeleteRow(index int) {
         // should panic or do proper error throwing
     }
 }
+
+// GetRowsBatch : fetches rows from DB in batches
+func (db DB) GetRowsBatch(rowAccess RowAccess) [][]string {
+    if(db.DbType == "mysql") {
+        return mysqlGetRowsBatch(db, rowAccess)
+    } else if (db.DbType == "postgres") {
+        return postgresGetRows(db, rowAccess)
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+// GetRowsSerial : fetches rows from DB in serial
+func (db DB) GetRowsSerial(rowAccess RowAccess) [][]string {
+    if(db.DbType == "mysql") {
+        return mysqlGetRowsSerial(db, rowAccess)
+    } else if (db.DbType == "postgres") {
+        return postgresGetRows(db, rowAccess)
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
