@@ -9,31 +9,36 @@ import (
 func mysqlInitDB(){
 }
 
-func mysqlGetRows(db DB, rowAccess RowAccess) []RowStructure {
+func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(rowAccess.Indices) - 1) + ")"
-    fetchedArr := make([]RowStructure, len(rowAccess.Indices))
     statement, _ := currentDatabase.Prepare(queryString)
-    rows, err := statement.Query(rowAccess.Indices...)
-    if err != nil {
-        panic(err)
-    }
+    rows, _ := statement.Query(rowAccess.Indices...)
+    columns, _ := rows.Columns()
+    values := make([]sql.RawBytes, len(columns))
     defer rows.Close()
-    index := 0
-    for rows.Next() {
-        rows.Scan(
-            &(fetchedArr[index]).ID,
-            &(fetchedArr[index]).NAME,
-            &(fetchedArr[index]).Age,
-            &(fetchedArr[index]).Department,
-            &(fetchedArr[index]).GPA,
-        )
-        index++;
+    fetchedArr := make([]interface{}, len(values))
+    for i := range values {
+        fetchedArr[i] = &(values[i])
     }
-    return fetchedArr
+
+    returnArr := [][]string{}
+    for rows.Next() {
+        rows.Scan(fetchedArr...)
+        currentArr := []string{}
+        for _, v := range values {
+            if v == nil {
+                currentArr = append(currentArr, "NULL")
+            } else {
+                currentArr = append(currentArr, string(v))
+            }
+        }
+        returnArr = append(returnArr, currentArr)
+    }
+    return returnArr
 }
 
 func mysqlInsertRow(db DB, rowStructure RowStructure) int {
