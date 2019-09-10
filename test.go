@@ -10,6 +10,7 @@ func InterfaceTest() int {
     return 5
 }
 
+// InterfaceBatchTime : tests the batch interface get rows times
 func InterfaceBatchTime() {
     fmt.Println("Starting batch test")
     totalDuration := 0.0
@@ -36,6 +37,7 @@ func InterfaceBatchTime() {
     fmt.Println("total average time is: %f", totalDuration / float64(numIterations))
 }
 
+// InterfaceSerialTime : tests the serial interface get rows times
 func InterfaceSerialTime() {
     fmt.Println("Starting Serial test")
     totalDuration := 0.0
