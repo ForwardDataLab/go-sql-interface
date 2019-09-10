@@ -10,56 +10,34 @@ func InterfaceTest() int {
     return 5
 }
 
-// InterfaceBatchTime : tests the batch interface get rows times
-func InterfaceBatchTime() {
+// InterfaceBatchTimeTest : tests the batch interface get rows times
+func InterfaceBatchTimeTest(db DB, ra RowAccess) {
     fmt.Println("Starting batch test")
-    totalDuration := 0.0
+    totalDuration := int64(0)
     numIterations := 10
 
     for i := 0; i < numIterations; i ++ {
         start := time.Now()
-        mysqlDb := DB{
-            DbType: "mysql",
-            DatabaseName: "dataspread_local",
-            Table: "second_sheet",
-            Username: "dataspread-user-1",
-            Password: "dataspread-pass-1",
-        }
-        ra := RowAccess{
-            Column: "ID",
-            Indices: []int{1, 2, 3, 4, 5},
-        }
-        mysqlDb.GetRowsBatch(ra)
+        db.GetRowsBatch(ra)
         currentTime := time.Since(start)
-        totalDuration += currentTime.Seconds()
+        totalDuration += currentTime.Milliseconds()
         fmt.Println(currentTime)
     }
-    fmt.Println("total average time is: %f", totalDuration / float64(numIterations))
+    fmt.Println("total average time is: ", totalDuration / int64(numIterations))
 }
 
-// InterfaceSerialTime : tests the serial interface get rows times
-func InterfaceSerialTime() {
+// InterfaceSerialTimeTest : tests the serial interface get rows times
+func InterfaceSerialTimeTest(db DB, ra RowAccess) {
     fmt.Println("Starting Serial test")
-    totalDuration := 0.0
+    totalDuration := int64(0)
     numIterations := 10
 
     for i := 0; i < numIterations; i ++ {
         start := time.Now()
-        mysqlDb := DB{
-            DbType: "mysql",
-            DatabaseName: "dataspread_local",
-            Table: "second_sheet",
-            Username: "dataspread-user-1",
-            Password: "dataspread-pass-1",
-        }
-        ra := RowAccess{
-            Column: "ID",
-            Indices: []int{1, 2, 3, 4, 5},
-        }
-        mysqlDb.GetRowsSerial(ra)
+        db.GetRowsSerial(ra)
         currentTime := time.Since(start)
-        totalDuration += currentTime.Seconds()
+        totalDuration += currentTime.Milliseconds()
         fmt.Println(currentTime)
     }
-    fmt.Println("total average time is: %f", totalDuration / float64(numIterations))
+    fmt.Println("total average time is: ", totalDuration / int64(numIterations))
 }

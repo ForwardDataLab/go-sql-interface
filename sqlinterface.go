@@ -26,13 +26,13 @@ func (db DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(rowStructure RowStructure) int {
+func (db DB) InsertRow(row []string) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(db, rowStructure)
+        return mysqlInsertRow(db, row)
     } else if (db.DbType == "postgres") {
-        return postgresInsertRow(db, rowStructure)
+        return postgresInsertRow(db, row)
     } else {
         // should panic or do proper error throwing
         return -1

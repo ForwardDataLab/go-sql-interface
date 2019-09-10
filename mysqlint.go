@@ -85,13 +85,13 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     return mysqlGetRowsBatch(db, rowAccess)
 }
 
-func mysqlInsertRow(db DB, rowStructure RowStructure) int {
+func mysqlInsertRow(db DB, row []string) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
     //     "@/" + db.DatabaseName)
     // insertQueryString := "INSERT INTO " +
     //     db.Table +
-    //     " (USER_NAME, INDEX_COL) VALUES (?, ?)"
+    //     " VALUES (?" + strings.Repeat(", ?", len(row) - 1) + ")"
     // insertStatement, _ := currentDatabase.Prepare(insertQueryString)
     // _, _ = insertStatement.Exec(rowStructure.USER_NAME, rowStructure.INDEX_COL)
 

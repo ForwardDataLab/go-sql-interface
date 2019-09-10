@@ -34,7 +34,7 @@ func postgresGetRows(db DB, rowAccess RowAccess) [][]string {
     return nil
 }
 
-func postgresInsertRow(db DB, rowStructure RowStructure) int {
+func postgresInsertRow(db DB, row []string) int {
     return -1
 }
 
