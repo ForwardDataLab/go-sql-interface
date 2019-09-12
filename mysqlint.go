@@ -128,13 +128,13 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
 
     for i, v := range cells {
         if v.Type == "int" {
-            insertCell[len(cells) + i], _ = strconv.ParseInt(v.Value, 10, 32)
+            insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
         } else if v.Type == "string" {
-            insertCell[len(cells) + i] = string(v.Value)
+            insertCell[i] = string(v.Value)
         } else if v.Type == "float" {
-            insertCell[len(cells) + i], _ = strconv.ParseFloat(v.Value, 64)
+            insertCell[i], _ = strconv.ParseFloat(v.Value, 64)
         } else if v.Type == "bool" {
-            insertCell[len(cells) + i], _ = strconv.ParseBool(v.Value)
+            insertCell[i], _ = strconv.ParseBool(v.Value)
         } else {
             return -1
         }
