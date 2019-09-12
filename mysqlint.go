@@ -112,7 +112,10 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
         db.Table +
         " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
         " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
-    insertStatement, _ := currentDatabase.Prepare(insertQueryString)
+    insertStatement, err := currentDatabase.Prepare(insertQueryString)
+    if err != nil {
+        print(err)
+    }
 
     // create interface and add max index
     insertCell := make([]interface{}, len(cells) * 2)
