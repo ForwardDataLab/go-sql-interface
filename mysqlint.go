@@ -93,8 +93,9 @@ func mysqlGetColMap(db DB) map[string]string {
     columnQueryString := "SELECT * FROM " + db.Table+ " LIMIT 1"
     rows, _ := currentDatabase.Query(columnQueryString)
     columns, _ := rows.Columns()
-    for col in columns:
+    for col := range columns {
         print(col)
+    }
     return colMap
 }
 
