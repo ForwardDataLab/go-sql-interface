@@ -103,8 +103,10 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
         "@/" + db.DatabaseName)
     selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.Table
     var maxIndex int
-    row, _ := currentDatabase.Query(selectMaxQueryString)
-    row.Scan(&maxIndex)
+    rows, _ := currentDatabase.Query(selectMaxQueryString)
+    for rows.Next() {
+        rows.Scan(&maxIndex)
+    }
 
     // " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
     insertQueryString := "INSERT INTO " +
