@@ -89,7 +89,7 @@ func mysqlGetColMap(db DB) map[string]string {
     colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
-    columnQueryString := "SELECT * FROM " + db.table_name + " LIMIT 1"
+    columnQueryString := "SELECT * FROM " + db.Table+ " LIMIT 1"
     rows, _ := currentDatabase.Query(columnQueryString)
     columns, _ := rows.Columns()
     print(columns)
@@ -100,7 +100,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
-    selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.table_name
+    selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.Table
     var maxIndex int
     row, _ := currentDatabase.Query(selectMaxQueryString)
     row.Scan(&maxIndex)
@@ -114,18 +114,18 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     // create interface and add max index
     insertCell := make([]interface{}, len(cells) * 2)
     for i, v := range cell {
-        insertCell[i] = v[0]
+        insertCell[i] = v.Column
     }
 
     for i, v := range cells {
-        if v[0] == "int" {
-            insertCell[len(cells) + i] = int(v[1])
-        } else if v[0] == "string" {
-            insertCell[len(cells) + i] = string(v[1])
-        } else if v[0] == "float" {
-            insertCell[len(cells) + i] = float64(v[1])
-        } else if v[0] == "bool" {
-            insertCell[len(cells) + i] = bool(v[1])
+        if v.Column == "int" {
+            insertCell[len(cells) + i] = int(v.Value)
+        } else if v.Column == "string" {
+            insertCell[len(cells) + i] = string(v.Value)
+        } else if v.Column == "float" {
+            insertCell[len(cells) + i] = float64(v.Value)
+        } else if v.Column == "bool" {
+            insertCell[len(cells) + i] = bool(v.Value)
         } else {
             return -1
         }
