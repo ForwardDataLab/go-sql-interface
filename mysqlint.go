@@ -3,6 +3,7 @@ package sqlinterface
 import (
     "database/sql"
     "strings"
+    "strconv"
     _ "github.com/go-sql-driver/mysql"
 )
 
@@ -113,19 +114,19 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
 
     // create interface and add max index
     insertCell := make([]interface{}, len(cells) * 2)
-    for i, v := range cell {
+    for i, v := range cells {
         insertCell[i] = v.Column
     }
 
     for i, v := range cells {
         if v.Column == "int" {
-            insertCell[len(cells) + i] = int(v.Value)
+            insertCell[len(cells) + i], _ = strconv.ParseInt(v.Value)
         } else if v.Column == "string" {
             insertCell[len(cells) + i] = string(v.Value)
         } else if v.Column == "float" {
-            insertCell[len(cells) + i] = float64(v.Value)
+            insertCell[len(cells) + i], _ = strconv.ParseFloat(v.Value)
         } else if v.Column == "bool" {
-            insertCell[len(cells) + i] = bool(v.Value)
+            insertCell[len(cells) + i], _ = strconv.ParseBool(v.Value)
         } else {
             return -1
         }
