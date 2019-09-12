@@ -85,25 +85,54 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     return mysqlGetRowsBatch(db, rowAccess)
 }
 
-func mysqlInsertRow(db DB, row []string) int {
+func mysqlGetColMap(db DB) map[string]string {
+    colMap := make(map[string]string)
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@/" + db.DatabaseName)
+    columnQueryString := "SELECT * FROM " + db.table_name + " LIMIT 1"
+    rows, _ := currentDatabase.Query(columnQueryString)
+    columns, _ := rows.Columns()
+    print(columns)
+    return colMap
+}
+
+func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
-    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-    //     "@/" + db.DatabaseName)
-    // insertQueryString := "INSERT INTO " +
-    //     db.Table +
-    //     " VALUES (?" + strings.Repeat(", ?", len(row) - 1) + ")"
-    // insertStatement, _ := currentDatabase.Prepare(insertQueryString)
-    // _, _ = insertStatement.Exec(rowStructure.USER_NAME, rowStructure.INDEX_COL)
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@/" + db.DatabaseName)
+    selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.table_name
+    var maxIndex int
+    row, _ := currentDatabase.Query(selectMaxQueryString)
+    row.Scan(&maxIndex)
 
-    // selectQueryString := "SELECT INDEX_COL FROM " +
-    //     db.Table +
-    //     " WHERE USER_NAME = ?"
-    // selectStatement, _ := currentDatabase.Prepare(selectQueryString)
+    insertQueryString := "INSERT INTO " +
+        db.Table +
+        " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
+        " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
+    insertStatement, _ := currentDatabase.Prepare(insertQueryString)
 
-    // autoIncrementIndex := -1;
-    // selectStatement.QueryRow(rowStructure.USER_NAME).Scan(&autoIncrementIndex)
-    // return autoIncrementIndex
-    return -1
+    // create interface and add max index
+    insertCell := make([]interface{}, len(cells) * 2)
+    for i, v := range cell {
+        insertCell[i] = v[0]
+    }
+
+    for i, v := range cells {
+        if v[0] == "int" {
+            insertCell[len(cells) + i] = int(v[1])
+        } else if v[0] == "string" {
+            insertCell[len(cells) + i] = string(v[1])
+        } else if v[0] == "float" {
+            insertCell[len(cells) + i] = float64(v[1])
+        } else if v[0] == "bool" {
+            insertCell[len(cells) + i] = bool(v[1])
+        } else {
+            return -1
+        }
+    }
+    _, _ = insertStatement.Exec(insertCell...)
+
+    return maxIndex + 1
 }
 
 func mysqlDeleteRow(db DB, index int) {

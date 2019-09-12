@@ -14,3 +14,9 @@ type RowAccess struct {
     Column string
     Indices []int
 }
+
+// Cell : struct to store an information about a cell in a row
+type Cell struct {
+    Column string
+    value string
+}

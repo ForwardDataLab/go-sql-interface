@@ -1,5 +1,17 @@
 package sqlinterface
 
+// GetColMap : gets the column mapping from DB
+func (db DB) GetColMap() map[string]string {
+    if(db.DbType == "mysql") {
+        return mysqlGetColMap(db)
+    } else if (db.DbType == "postgres") {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
 // GetRows : fetches rows from DB
 func (db DB) GetRows(rowAccess RowAccess) [][]string {
     if(db.DbType == "mysql") {
