@@ -87,17 +87,14 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     return mysqlGetRowsBatch(db, rowAccess)
 }
 
-func mysqlGetColMap(db DB) map[string]string {
-    colMap := make(map[string]string)
+func mysqlGetColMap(db DB) []string {
+    // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
     columnQueryString := "SELECT * FROM " + db.Table+ " LIMIT 1"
     rows, _ := currentDatabase.Query(columnQueryString)
     columns, _ := rows.Columns()
-    for _, col := range columns {
-        print(col)
-    }
-    return colMap
+    return columns
 }
 
 func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
@@ -120,14 +117,13 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     }
 
     // create interface and add max index
-    // insertCell := make([]interface{}, len(cells) * 2)
-    insertCell := make([]interface{}, len(cells))
-    // for i, v := range cells {
-    //     insertCell[i] = v.Column
-    // }
+    insertCell := make([]interface{}, len(cells) + 1)
 
+    columns := mysqlGetColMap(db)
     for i, v := range cells {
-        if v.Type == "int" {
+        if columns[i] == indexCol {
+            insertCell[i] = maxIndex + 1
+        } else if v.Type == "int" {
             insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
         } else if v.Type == "string" {
             insertCell[i] = string(v.Value)

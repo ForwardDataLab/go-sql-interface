@@ -17,7 +17,6 @@ type RowAccess struct {
 
 // Cell : struct to store an information about a cell in a row
 type Cell struct {
-    Column string
     Type string
     Value string
 }
