@@ -115,6 +115,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
         " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
     insertStatement, err := currentDatabase.Prepare(insertQueryString)
     if err != nil {
+        fmt.Println(insertQueryString)
         fmt.Println(err)
     }
 
