@@ -2,6 +2,7 @@ package sqlinterface
 
 import (
     "database/sql"
+    "fmt"
     "strings"
     "strconv"
     _ "github.com/go-sql-driver/mysql"
@@ -114,7 +115,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
         " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
     insertStatement, err := currentDatabase.Prepare(insertQueryString)
     if err != nil {
-        print(err)
+        fmt.Println(err)
     }
 
     // create interface and add max index
