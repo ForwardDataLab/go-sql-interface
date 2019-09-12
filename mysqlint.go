@@ -120,10 +120,11 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     }
 
     // create interface and add max index
-    insertCell := make([]interface{}, len(cells) * 2)
-    for i, v := range cells {
-        insertCell[i] = v.Column
-    }
+    // insertCell := make([]interface{}, len(cells) * 2)
+    insertCell := make([]interface{}, len(cells))
+    // for i, v := range cells {
+    //     insertCell[i] = v.Column
+    // }
 
     for i, v := range cells {
         if v.Type == "int" {
