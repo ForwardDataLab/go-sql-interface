@@ -109,9 +109,9 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     row, _ := currentDatabase.Query(selectMaxQueryString)
     row.Scan(&maxIndex)
 
+    // " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
     insertQueryString := "INSERT INTO " +
         db.Table +
-        " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
         " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
     insertStatement, err := currentDatabase.Prepare(insertQueryString)
     if err != nil {
