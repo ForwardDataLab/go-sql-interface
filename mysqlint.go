@@ -11,6 +11,10 @@ import (
 func mysqlInitDB(){
 }
 
+func mysqlOptimizeDB(db DB, rankToRowMap []map[int]int) {
+    db.clusterMap = make(map[int]int)
+}
+
 func mysqlGetRowsSerial(db DB, rowAccess RowAccess) [][]string {
     convertedIndices := make([]interface{}, len(rowAccess.Indices))
     for i, v := range rowAccess.Indices {
@@ -81,6 +85,65 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
         returnArr = append(returnArr, currentArr)
     }
     return returnArr
+}
+
+func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
+    clusterIDs := []int{}
+    subsetClusterMap := make(map[int]bool)
+    rowIDMap := make(map[int]bool)
+    for i, v := range rowAccess.Indices {
+        rowIDMap[v] = true
+    }
+
+    for i, v := range rowAccess.Indices {
+        subsetClusterMap[db.clusterMap[v]] = true
+    }
+
+    for k, v := range ssubsetClusterMap {
+        clusterIDs = append(cclusterIDs, k)
+    }
+
+    convertedIndices := make([]interface{}, len(clusterIDs))
+    for i, v := range clusterIDs {
+        convertedIndices[i] = v
+    }
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@/" + db.DatabaseName)
+    queryString := "SELECT * FROM " +
+        db.Table +
+        " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
+    statement, _ := currentDatabase.Prepare(queryString)
+    rows, _ := statement.Query(convertedIndices...)
+    columns, _ := rows.Columns()
+    values := make([]sql.RawBytes, len(columns))
+    defer rows.Close()
+    fetchedArr := make([]interface{}, len(values))
+    for i := range values {
+        fetchedArr[i] = &(values[i])
+    }
+
+    returnArr := [][]string{}
+    for rows.Next() {
+        rows.Scan(fetchedArr...)
+        currentArr := []string{}
+        for _, v := range values {
+            if v == nil {
+                currentArr = append(currentArr, "NULL")
+            } else {
+                currentArr = append(currentArr, string(v))
+            }
+        }
+        returnArr = append(returnArr, currentArr)
+    }
+    filteredArr := [][]string{}
+    // PERFORM FILTERING BASED ON rowAccess.Indices
+    for i, v := range returnArr {
+        if val, ok = rowIDMap[v[0]]; ok {
+            filteredArr = append(filteredArr, v)
+        }
+    }
+
+    return filteredArr
 }
 
 func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {

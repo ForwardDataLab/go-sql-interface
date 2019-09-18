@@ -1,5 +1,6 @@
 package sqlinterface
 
+
 // GetColMap : gets the column mapping from DB
 func (db DB) GetColMap() []string {
     if(db.DbType == "mysql") {
@@ -82,6 +83,30 @@ func (db DB) GetRowsSerial(rowAccess RowAccess) [][]string {
         return mysqlGetRowsSerial(db, rowAccess)
     } else if (db.DbType == "postgres") {
         return postgresGetRows(db, rowAccess)
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+// GetRowsCluster : fetches rows from DB in cluters
+func (db DB) GetRowsCluster(rowAccess RowAccess) [][]string {
+    if(db.DbType == "mysql") {
+        return mysqlGetRowsCluster(db, rowAccess)
+    } else if (db.DbType == "postgres") {
+        return postgresGetRows(db, rowAccess)
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+// OptimizeDB : optimzies the database
+func (db DB) OptimizeDB(rankToRowMap map[int]int) {
+    if(db.DbType == "mysql") {
+        return mysqlOptimizeDB(db, rankToRowMap)
+    } else if (db.DbType == "postgres") {
+        return postgresOptimizeDB(db, rankToRowMap)
     } else {
         // should panic or do proper error throwing
         return nil

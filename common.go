@@ -7,6 +7,8 @@ type DB struct {
     Password string
     DatabaseName string
     Table string
+    clusterMap map[int]int
+    clusterSize int
 }
 
 // RowAccess : struct to request rows from the database

@@ -8,6 +8,9 @@ import (
 func postgresInitDB(){
 }
 
+func postgresOptimizeDB(db DB, rankToRowMap []map[int]int) {
+}
+
 func postgresGetRows(db DB, rowAccess RowAccess) [][]string {
     // currentDatabase, _ := sql.Open(db.DbType, "user=" + db.Username +
     //     " password=" + db.Password +
