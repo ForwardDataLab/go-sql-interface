@@ -104,6 +104,7 @@ func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []i
     for i, v := range perm {
         shuffledConfiguration[v] = newConfiguration[i]
     }
+    fmt.Println(shuffledConfiguration)
     return shuffledConfiguration
 }
 
