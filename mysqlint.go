@@ -51,6 +51,7 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
 func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
     if db.fresh {
+        fmt.Println("fresh")
         db.ClusterMap = make(map[int]int)
         db.ClusterSize = max(int(len(rankToRowMapArr[0]) / 100), 1)
         db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
