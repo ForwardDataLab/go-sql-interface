@@ -9,7 +9,7 @@ import (
     _ "github.com/go-sql-driver/mysql"
 )
 
-func mysqlInitDB(db DB){
+func mysqlInitDB(db *DB){
     db.fresh = true
 }
 

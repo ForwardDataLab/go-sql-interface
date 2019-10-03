@@ -26,7 +26,7 @@ func (db DB) GetRows(rowAccess RowAccess) [][]string {
 }
 
 // InitDB : initializes the database upon initial creation of workspace
-func (db DB) InitDB() {
+func (db *DB) InitDB() {
     // add a column called index_col
     // ALTER TABLE `myTable` ADD COLUMN `id` INT AUTO_INCREMENT UNIQUE
     if(db.DbType == "mysql") {
@@ -102,11 +102,11 @@ func (db DB) GetRowsCluster(rowAccess RowAccess) [][]string {
 }
 
 // OptimizeDB : optimzies the database
-func (db DB) OptimizeDB(rankToRowMapArr []map[int]int) {
+func (db *DB) OptimizeDB(rankToRowMapArr []map[int]int) {
     if(db.DbType == "mysql") {
         mysqlOptimizeDB(db, rankToRowMapArr)
     } else if (db.DbType == "postgres") {
-        postgresOptimizeDB(db, rankToRowMapArr)
+        // postgresOptimizeDB(db, rankToRowMapArr)
     } else {
         // should panic or do proper error throwing
     }
