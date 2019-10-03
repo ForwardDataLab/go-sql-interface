@@ -48,7 +48,7 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
     return finalCost
 }
 
-func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
+func mysqlOptimizeDB(db *DB, rankToRowMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
     fmt.Println(db)
     fmt.Println(db.fresh)
