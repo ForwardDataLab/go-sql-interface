@@ -52,7 +52,7 @@ func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
     if db.fresh {
         db.ClusterMap = make(map[int]int)
-        db.ClusterSize = max(int(len(rankToRowMapArr[0])) / 100, 1)
+        db.ClusterSize = max(int(len(rankToRowMapArr[0]) / 100), 1)
         db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
         for i := 0; i < len(rankToRowMapArr[0]); i ++ {
             currentMinimumConfiguration[i] = 0
@@ -62,6 +62,7 @@ func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
             currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
+    fmt.Println(db.NumClusters)
     pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
     // set the db.ClusterMap to the minimum configuratino found
 }
