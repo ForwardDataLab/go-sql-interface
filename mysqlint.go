@@ -70,10 +70,10 @@ func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) i
     if numIter > int(math.Pow(float64(numClusters), float64(len(currentConfiguration)))) {
         return -1;
     }
-    currentCost := cost(currentMinimumConfiguration)
+    currentCost := cost(currentConfiguration)
     newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
     fmt.Print(newConfiguration)
-    newCost = pickMinimumCost(newConfiguration, numIter + 1)
+    newCost := pickMinimumCost(newConfiguration, numIter + 1)
     if newCost == -1 {
         return currentCost
     }
@@ -81,11 +81,11 @@ func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) i
 }
 
 func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
-    newConfiguration := make([]int)
+    newConfiguration := make([]int, lengthConfiguration)
     currentValue := numIter
-    for i := range lengthConfiguration {
-        newConfiguration = append(math.Mod(currentValue, numClusters), newConfiguration)
-        currentValue = (currentValue - math.Mod(currentValue, numClusters)) / numClusters
+    for i := 0; i < lengthConfiguration; i ++ {
+        newConfiguration[i] = int(math.Mod(float64(currentValue), float64(numClusters)))
+        currentValue = (currentValue - int(math.Mod(float64(currentValue), float64(numClusters)))) / numClusters
     }
     return newConfiguration
 }
