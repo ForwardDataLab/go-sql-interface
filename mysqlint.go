@@ -6,6 +6,7 @@ import (
         "math/rand"
         "strings"
         "strconv"
+        "time"
         _ "github.com/go-sql-driver/mysql"
        )
 
@@ -91,6 +92,7 @@ func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numCluster
 }
 
 func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
+    rand.Seed(time.Now().UTC().UnixNano())
     newConfiguration := make([]int, lengthConfiguration)
     // currentValue := numIter
     // for i := lengthConfiguration - 1; i > -1; i -- {
