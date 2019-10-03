@@ -50,10 +50,7 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
 
 func mysqlOptimizeDB(db *DB, rankToRowMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
-    fmt.Println(db)
-    fmt.Println(db.fresh)
     if db.fresh {
-        fmt.Println("fresh")
         db.ClusterMap = make(map[int]int)
         db.ClusterSize = max(int(len(rankToRowMapArr[0]) / 100), 1)
         db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
@@ -65,7 +62,6 @@ func mysqlOptimizeDB(db *DB, rankToRowMapArr []map[int]int) {
             currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
-    fmt.Println(db.NumClusters)
     pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
     // set the db.ClusterMap to the minimum configuratino found
 }
@@ -76,7 +72,6 @@ func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int, r
     }
     currentCost := cost(currentConfiguration, rankToRowMapArr)
     newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
-    fmt.Print(newConfiguration)
     newCost := pickMinimumCost(newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
     if newCost == -1 {
         return currentCost
