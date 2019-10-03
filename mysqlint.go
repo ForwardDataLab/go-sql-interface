@@ -82,7 +82,7 @@ currentCost := cost(currentConfiguration, rankToRowMapArr)
 func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
     newConfiguration := make([]int, lengthConfiguration)
     currentValue := numIter
-    for i := 0; i < lengthConfiguration; i ++ {
+    for i := lengthConfiguration - 1; i > -1; i -- {
         newConfiguration[i] = int(math.Mod(float64(currentValue), float64(numClusters)))
         currentValue = (currentValue - int(math.Mod(float64(currentValue), float64(numClusters)))) / numClusters
     }
