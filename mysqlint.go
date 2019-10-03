@@ -3,7 +3,7 @@ package sqlinterface
 import (
         "database/sql"
         "fmt"
-        "math"
+        "math/rand"
         "strings"
         "strconv"
         _ "github.com/go-sql-driver/mysql"
@@ -14,82 +14,98 @@ func mysqlInitDB(db *DB){
 }
 
 func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
-weights := []int{1, 1, 1}
-coefficients := []int{0, 0, 0}
+    weights := []int{1, 1, 1}
+    coefficients := []int{0, 0, 0}
 
-clusterMapping := make(map[int]int)
-                    for _, v := range clusterConfiguration {
-                        if currentNum, ok := clusterMapping[v]; ok {
-                            clusterMapping[v] = currentNum + 1
-                        } else {
-                            clusterMapping[v] = 1
-                        }
-                    }
-currentMaxSize := 0
-                    for _, v := range clusterConfiguration {
-                        if v > currentMaxSize {
-                            currentMaxSize = v
-                        }
-                    }
-sumDifference := 0
-                   for _, mapping := range rankToRowMapArr {
-                       for i, v := range clusterConfiguration {
-                           sumDifference += (v - mapping[i]) * (v - mapping[i])
-                       }
-                   }
+    clusterMapping := make(map[int]int)
+    for _, v := range clusterConfiguration {
+        if currentNum, ok := clusterMapping[v]; ok {
+            clusterMapping[v] = currentNum + 1
+        } else {
+            clusterMapping[v] = 1
+        }
+    }
+    currentMaxSize := 0
+    for _, v := range clusterConfiguration {
+        if v > currentMaxSize {
+            currentMaxSize = v
+        }
+    }
+    sumDifference := 0
+     for _, mapping := range rankToRowMapArr {
+         for i, v := range clusterConfiguration {
+             sumDifference += (v - mapping[i]) * (v - mapping[i])
+         }
+     }
 
-               coefficients[0] = currentMaxSize
-                   coefficients[1] = len(clusterMapping)
-                   coefficients[2] = sumDifference
-                   finalCost := 0
-                   for i := 0; i < 3; i ++ {
-                       finalCost += weights[i] * coefficients[i]
-                   }
-               return finalCost
+     coefficients[0] = currentMaxSize
+     coefficients[1] = len(clusterMapping)
+     coefficients[2] = sumDifference
+     finalCost := 0
+     for i := 0; i < 3; i ++ {
+         finalCost += weights[i] * coefficients[i]
+     }
+     return finalCost
+}
+
+func calculateOptimalClusterSize(numRows int) int {
+    if numRows < 100 {
+        return numRows / 3
+    }
+    return -1
 }
 
 func mysqlOptimizeDB(db *DB, rankToRowMapArr []map[int]int) {
 currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
-                                 if db.fresh {
-                                     db.ClusterMap = make(map[int]int)
-                                         db.ClusterSize = max(int(len(rankToRowMapArr[0]) / 100), 1)
-                                         db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
-                                         for i := 0; i < len(rankToRowMapArr[0]); i ++ {
-                                             currentMinimumConfiguration[i] = 0
-                                         }
-                                 } else {
-                                     for i := 0; i < len(rankToRowMapArr[0]); i ++ {
-                                         currentMinimumConfiguration[i] = db.ClusterMap[i]
-                                     }
-                                 }
-                             pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
-                                 // set the db.ClusterMap to the minimum configuratino found
+    if db.fresh {
+        db.ClusterMap = make(map[int]int)
+        db.ClusterSize = calculateOptimalClusterSize(len(rankToRowMapArr[0]))
+        db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
+        for i := 0; i < len(rankToRowMapArr[0]); i ++ {
+            currentMinimumConfiguration[i] = 0
+        }
+    } else {
+        for i := 0; i < len(rankToRowMapArr[0]); i ++ {
+            currentMinimumConfiguration[i] = db.ClusterMap[i]
+        }
+    }
+    pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
+    // set the db.ClusterMap to the minimum configuratino found
 }
 
 func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
-    if numIter > int(math.Pow(float64(numClusters), float64(len(currentConfiguration)))) {
+    if numIter > 50 {
         return -1;
     }
-currentCost := cost(currentConfiguration, rankToRowMapArr)
-                 newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
+    currentCost := cost(currentConfiguration, rankToRowMapArr)
+    newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
     newCost := pickMinimumCost(newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
     if newCost == -1 {
         return currentCost
     }
+    fmt.Println(numClusters)
+    fmt.Println(numIter)
+    fmt.Println(newConfiguration)
+    fmt.Println(newCost)
+    fmt.Println(currentCost)
     return min(currentCost, newCost)
 }
 
 func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
     newConfiguration := make([]int, lengthConfiguration)
-    currentValue := numIter
-    for i := lengthConfiguration - 1; i > -1; i -- {
-        newConfiguration[i] = int(math.Mod(float64(currentValue), float64(numClusters)))
-        currentValue = (currentValue - int(math.Mod(float64(currentValue), float64(numClusters)))) / numClusters
+    // currentValue := numIter
+    // for i := lengthConfiguration - 1; i > -1; i -- {
+    //     newConfiguration[i] = int(math.Mod(float64(currentValue), float64(numClusters)))
+    //     currentValue = (currentValue - int(math.Mod(float64(currentValue), float64(numClusters)))) / numClusters
+    for i := 0; i < lengthConfiguration; i ++ {
+        newConfiguration[i] = i / numClusters
     }
-    fmt.Println(numClusters)
-    fmt.Println(numIter)
-    fmt.Println(newConfiguration)
-    return newConfiguration
+    shuffledConfiguration := make([]int, len(newConfiguration))
+    perm := rand.Perm(len(newConfiguration))
+    for i, v := range perm {
+        shuffledConfiguration[v] = newConfiguration[i]
+    }
+    return shuffledConfiguration
 }
 
 func mysqlGetRowsSerial(db DB, rowAccess RowAccess) [][]string {
