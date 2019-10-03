@@ -3,16 +3,91 @@ package sqlinterface
 import (
     "database/sql"
     "fmt"
+    "math"
     "strings"
     "strconv"
     _ "github.com/go-sql-driver/mysql"
 )
 
 func mysqlInitDB(){
+    db.fresh = true
 }
 
-func mysqlOptimizeDB(db DB, rankToRowMap []map[int]int) {
-    db.clusterMap = make(map[int]int)
+func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
+    weights := []int{1, 1, 1}
+    coefficients := []int{0, 0, 0}
+
+    clusterMapping := make(map[int]int)
+    for i, v := range clusterConfiguration {
+        if currentNum, ok := dict[v]; ok {
+            clusterMapping[v] = currentNum + 1
+        } else {
+            clusterMapping[v] = 1
+        }
+    }
+    currentMaxSize := 0
+    for i, v := range clusterConfiguration {
+        if v > currentMaxSize {
+            currentMaxSize = v
+        }
+    }
+    sumDifference := 0
+    for _, mapping := range rankToRowMapArr {
+        for i, v := range clusterConfiguration {
+            sumDifference += (v - i) * (v - i)
+        }
+    }
+
+    coefficients[0] = currentMaxSize
+    coefficients[1] = len(clusterMapping)
+    coefficients[2] = sumDifference
+    finalCost := 0
+    for i := range 3 {
+        finalCost += weights[i] * coefficients[i]
+    }
+    return finalCost
+}
+
+func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
+    currentMinimumConfiguration := make([]int)
+    if db.fresh {
+        db.ClusterMap = make(map[int]int)
+        db.ClusterSize = max(int(len(rankToRowMapArr[0])) / 100, 1)
+        db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
+        for i := range len(rankToRowMapArr[0]) {
+            currentMinimumConfiguration = append(currentMinimumConfiguration, i)
+        }
+    } else {
+        for i := range len(rankToRowMapArr[0]) {
+            currentMinimumConfiguration = append(currentMinimumConfiguration, db.ClusterMap[i])
+        }
+    }
+    minimumConfiguration := pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters)
+    // set the db.ClusterMap to the minimum configuratino found
+}
+
+func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) {
+    if numIter > math.Pow(numClusters, len(currentConfiguration)) {
+        return -1;
+    }
+    currentCost := cost(currentMinimumConfiguration)
+    newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
+    fmt.Print(newConfiguration)
+    newCost = pickMinimumCost(newConfiguration, numIter + 1)
+    if newCost == -1 {
+        return currentCost
+    }
+    return min(currentCost, newCost)
+}
+
+func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
+    newConfiguration := make([]int)
+    currentValue := numIter
+    for i := range lengthConfiguration {
+        newConfiguration = append(math.Mod(currentValue, numClusters), newConfiguration)
+        currentValue = (currentValue - math.Mod(currentValue, numClusters)) / numClusters
+    }
+    return newConfiguration
 }
 
 func mysqlGetRowsSerial(db DB, rowAccess RowAccess) [][]string {
@@ -99,8 +174,8 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
         subsetClusterMap[db.clusterMap[v]] = true
     }
 
-    for k, v := range ssubsetClusterMap {
-        clusterIDs = append(cclusterIDs, k)
+    for k, v := range subsetClusterMap {
+        clusterIDs = append(clusterIDs, k)
     }
 
     convertedIndices := make([]interface{}, len(clusterIDs))
@@ -147,7 +222,7 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
 }
 
 func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
-    return mysqlGetRowsBatch(db, rowAccess)
+    return mysqlGetRowsCluster(db, rowAccess)
 }
 
 func mysqlGetColMap(db DB) []string {

@@ -7,8 +7,10 @@ type DB struct {
     Password string
     DatabaseName string
     Table string
-    clusterMap map[int]int
-    clusterSize int
+    ClusterMap map[int]int
+    ClusterSize int
+    NumClusters int
+    fresh bool
 }
 
 // RowAccess : struct to request rows from the database
@@ -21,4 +23,18 @@ type RowAccess struct {
 type Cell struct {
     Type string
     Value string
+}
+
+func max(a int, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+func min(a int, b int) int {
+    if a < b {
+        return a
+    }
+    return b
 }
