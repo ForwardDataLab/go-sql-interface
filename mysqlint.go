@@ -9,7 +9,7 @@ import (
     _ "github.com/go-sql-driver/mysql"
 )
 
-func mysqlInitDB(){
+func mysqlInitDB(db DB){
     db.fresh = true
 }
 
@@ -19,7 +19,7 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
 
     clusterMapping := make(map[int]int)
     for i, v := range clusterConfiguration {
-        if currentNum, ok := dict[v]; ok {
+        if currentNum, ok := clusterMapping[v]; ok {
             clusterMapping[v] = currentNum + 1
         } else {
             clusterMapping[v] = 1
@@ -42,32 +42,32 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
     coefficients[1] = len(clusterMapping)
     coefficients[2] = sumDifference
     finalCost := 0
-    for i := range 3 {
+    for i := 0; i < 3; i ++ {
         finalCost += weights[i] * coefficients[i]
     }
     return finalCost
 }
 
 func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
-    currentMinimumConfiguration := make([]int)
+    currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
     if db.fresh {
         db.ClusterMap = make(map[int]int)
         db.ClusterSize = max(int(len(rankToRowMapArr[0])) / 100, 1)
         db.NumClusters = len(rankToRowMapArr[0]) / db.ClusterSize
-        for i := range len(rankToRowMapArr[0]) {
-            currentMinimumConfiguration = append(currentMinimumConfiguration, i)
+        for i := 0; i < len(rankToRowMapArr[0]); i ++ {
+            currentMinimumConfiguration[i] = 0
         }
     } else {
-        for i := range len(rankToRowMapArr[0]) {
-            currentMinimumConfiguration = append(currentMinimumConfiguration, db.ClusterMap[i])
+        for i := 0; i < len(rankToRowMapArr[0]); i ++ {
+            currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
     minimumConfiguration := pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters)
     // set the db.ClusterMap to the minimum configuratino found
 }
 
-func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) {
-    if numIter > math.Pow(numClusters, len(currentConfiguration)) {
+func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) int {
+    if numIter > int(math.Pow(float64(numClusters), float64(len(currentConfiguration)))) {
         return -1;
     }
     currentCost := cost(currentMinimumConfiguration)

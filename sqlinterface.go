@@ -30,7 +30,7 @@ func (db DB) InitDB() {
     // add a column called index_col
     // ALTER TABLE `myTable` ADD COLUMN `id` INT AUTO_INCREMENT UNIQUE
     if(db.DbType == "mysql") {
-        mysqlInitDB()
+        mysqlInitDB(db)
     } else if (db.DbType == "postgres") {
         postgresInitDB()
     } else {
