@@ -62,18 +62,18 @@ func mysqlOptimizeDB(db DB, rankToRowMapArr []map[int]int) {
             currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
-    minimumConfiguration := pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters)
+    minimumConfiguration := pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
     // set the db.ClusterMap to the minimum configuratino found
 }
 
-func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int) int {
+func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
     if numIter > int(math.Pow(float64(numClusters), float64(len(currentConfiguration)))) {
         return -1;
     }
-    currentCost := cost(currentConfiguration)
+    currentCost := cost(currentConfiguration, rankToRowMapArr)
     newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
     fmt.Print(newConfiguration)
-    newCost := pickMinimumCost(newConfiguration, numIter + 1)
+    newCost := pickMinimumCost(newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
     if newCost == -1 {
         return currentCost
     }
@@ -163,60 +163,60 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
 }
 
 func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
-    clusterIDs := []int{}
-    subsetClusterMap := make(map[int]bool)
-    rowIDMap := make(map[int]bool)
-    for i, v := range rowAccess.Indices {
-        rowIDMap[v] = true
-    }
+    // clusterIDs := []int{}
+    // subsetClusterMap := make(map[int]bool)
+    // rowIDMap := make(map[int]bool)
+    // for i, v := range rowAccess.Indices {
+    //     rowIDMap[v] = true
+    // }
 
-    for i, v := range rowAccess.Indices {
-        subsetClusterMap[db.clusterMap[v]] = true
-    }
+    // for i, v := range rowAccess.Indices {
+    //     subsetClusterMap[db.ClusterMap[v]] = true
+    // }
 
-    for k, v := range subsetClusterMap {
-        clusterIDs = append(clusterIDs, k)
-    }
+    // for k, v := range subsetClusterMap {
+    //     clusterIDs = append(clusterIDs, k)
+    // }
 
-    convertedIndices := make([]interface{}, len(clusterIDs))
-    for i, v := range clusterIDs {
-        convertedIndices[i] = v
-    }
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
-    queryString := "SELECT * FROM " +
-        db.Table +
-        " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
-    statement, _ := currentDatabase.Prepare(queryString)
-    rows, _ := statement.Query(convertedIndices...)
-    columns, _ := rows.Columns()
-    values := make([]sql.RawBytes, len(columns))
-    defer rows.Close()
-    fetchedArr := make([]interface{}, len(values))
-    for i := range values {
-        fetchedArr[i] = &(values[i])
-    }
+    // convertedIndices := make([]interface{}, len(clusterIDs))
+    // for i, v := range clusterIDs {
+    //     convertedIndices[i] = v
+    // }
+    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+    //     "@/" + db.DatabaseName)
+    // queryString := "SELECT * FROM " +
+    //     db.Table +
+    //     " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
+    // statement, _ := currentDatabase.Prepare(queryString)
+    // rows, _ := statement.Query(convertedIndices...)
+    // columns, _ := rows.Columns()
+    // values := make([]sql.RawBytes, len(columns))
+    // defer rows.Close()
+    // fetchedArr := make([]interface{}, len(values))
+    // for i := range values {
+    //     fetchedArr[i] = &(values[i])
+    // }
 
-    returnArr := [][]string{}
-    for rows.Next() {
-        rows.Scan(fetchedArr...)
-        currentArr := []string{}
-        for _, v := range values {
-            if v == nil {
-                currentArr = append(currentArr, "NULL")
-            } else {
-                currentArr = append(currentArr, string(v))
-            }
-        }
-        returnArr = append(returnArr, currentArr)
-    }
+    // returnArr := [][]string{}
+    // for rows.Next() {
+    //     rows.Scan(fetchedArr...)
+    //     currentArr := []string{}
+    //     for _, v := range values {
+    //         if v == nil {
+    //             currentArr = append(currentArr, "NULL")
+    //         } else {
+    //             currentArr = append(currentArr, string(v))
+    //         }
+    //     }
+    //     returnArr = append(returnArr, currentArr)
+    // }
     filteredArr := [][]string{}
-    // PERFORM FILTERING BASED ON rowAccess.Indices
-    for i, v := range returnArr {
-        if val, ok = rowIDMap[v[0]]; ok {
-            filteredArr = append(filteredArr, v)
-        }
-    }
+    // // PERFORM FILTERING BASED ON rowAccess.Indices
+    // for i, v := range returnArr {
+    //     if val, ok = rowIDMap[v[0]]; ok {
+    //         filteredArr = append(filteredArr, v)
+    //     }
+    // }
 
     return filteredArr
 }

@@ -102,13 +102,12 @@ func (db DB) GetRowsCluster(rowAccess RowAccess) [][]string {
 }
 
 // OptimizeDB : optimzies the database
-func (db DB) OptimizeDB(rankToRowMap map[int]int) {
+func (db DB) OptimizeDB(rankToRowMapArr []map[int]int) {
     if(db.DbType == "mysql") {
-        return mysqlOptimizeDB(db, rankToRowMap)
+        mysqlOptimizeDB(db, rankToRowMapArr)
     } else if (db.DbType == "postgres") {
-        return postgresOptimizeDB(db, rankToRowMap)
+        postgresOptimizeDB(db, rankToRowMapArr)
     } else {
         // should panic or do proper error throwing
-        return nil
     }
 }
