@@ -11,6 +11,7 @@ type DB struct {
     ClusterSize int
     NumClusters int
     fresh bool
+    newConfiguration []int
 }
 
 // RowAccess : struct to request rows from the database

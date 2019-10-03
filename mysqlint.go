@@ -69,11 +69,12 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
             currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
-    pickMinimumCost(currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
+    pickMinimumCost(db, currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
+    fmt.Print(db.newConfiguration)
     // set the db.ClusterMap to the minimum configuratino found
 }
 
-func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
+func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
     if numIter > 50 {
         return -1;
     }
@@ -83,11 +84,9 @@ func pickMinimumCost(currentConfiguration []int, numIter int, numClusters int, r
     if newCost == -1 {
         return currentCost
     }
-    fmt.Println(numClusters)
-    fmt.Println(numIter)
-    fmt.Println(newConfiguration)
-    fmt.Println(newCost)
-    fmt.Println(currentCost)
+    if newCost < currentCost {
+        db.newConfiguration = newConfiguration
+    }
     return min(currentCost, newCost)
 }
 
