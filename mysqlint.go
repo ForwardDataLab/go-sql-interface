@@ -82,7 +82,7 @@ func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
             currentMinimumConfiguration[i] = db.ClusterMap[i]
         }
     }
-    pickMinimumCost(db, currentMinimumConfiguration, 0, db.NumClusters, rowToRankMapArr)
+    pickMinimumCost(db, currentMinimumConfiguration, 0, db.NumClusters, db.ClusterSize, rowToRankMapArr)
     fmt.Print("New configuration: ")
     fmt.Println(db.newConfiguration)
     for i, v := range db.newConfiguration {
@@ -103,10 +103,10 @@ func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
     // set the db.ClusterMap to the minimum configuratino found
 }
 
-func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rowToRankMapArr []map[int]int) {
+func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, clusterSize int, rowToRankMapArr []map[int]int) {
     if numIter < 100 {
         currentCost := cost(currentConfiguration, rowToRankMapArr)
-        newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
+        newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters, clusterSize)
         newCost := cost(newConfiguration, rowToRankMapArr)
         if newCost < currentCost {
             fmt.Print("proposed configuration: ")
@@ -114,14 +114,14 @@ func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numCluster
             fmt.Print("cost of proposed configuration: ")
             fmt.Println(newCost)
             db.newConfiguration = newConfiguration
-            pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, rowToRankMapArr)
+            pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, clusterSize, rowToRankMapArr)
         } else {
-            pickMinimumCost(db, currentConfiguration, numIter + 1, numClusters, rowToRankMapArr)
+            pickMinimumCost(db, currentConfiguration, numIter + 1, numClusters, clusterSize, rowToRankMapArr)
         }
     }
 }
 
-func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
+func getConfiguration(lengthConfiguration int, numIter int, numClusters int, clusterSize) []int {
     rand.Seed(time.Now().UTC().UnixNano())
     newConfiguration := make([]int, lengthConfiguration)
     // currentValue := numIter
@@ -129,7 +129,7 @@ func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []i
     //     newConfiguration[i] = int(math.Mod(float64(currentValue), float64(numClusters)))
     //     currentValue = (currentValue - int(math.Mod(float64(currentValue), float64(numClusters)))) / numClusters
     for i := 0; i < lengthConfiguration; i ++ {
-        newConfiguration[i] = i / numClusters
+        newConfiguration[i] = i / clusterSize
     }
     shuffledConfiguration := make([]int, len(newConfiguration))
     perm := rand.Perm(len(newConfiguration))
