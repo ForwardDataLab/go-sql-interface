@@ -121,7 +121,7 @@ func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numCluster
     }
 }
 
-func getConfiguration(lengthConfiguration int, numIter int, numClusters int, clusterSize) []int {
+func getConfiguration(lengthConfiguration int, numIter int, numClusters int, clusterSize int) []int {
     rand.Seed(time.Now().UTC().UnixNano())
     newConfiguration := make([]int, lengthConfiguration)
     // currentValue := numIter
