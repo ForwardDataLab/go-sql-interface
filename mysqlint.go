@@ -67,6 +67,7 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
         for i := 0; i < len(rankToRowMapArr[0]); i ++ {
             currentMinimumConfiguration[i] = 0
         }
+        db.fresh = false
     } else {
         for i := 0; i < len(rankToRowMapArr[0]); i ++ {
             currentMinimumConfiguration[i] = db.ClusterMap[i]
@@ -111,7 +112,7 @@ func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []i
     for i, v := range perm {
         shuffledConfiguration[v] = newConfiguration[i]
     }
-    // fmt.Println(shuffledConfiguration)
+    fmt.Println(shuffledConfiguration)
     return shuffledConfiguration
 }
 
