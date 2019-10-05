@@ -78,7 +78,7 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
     // set the db.ClusterMap to the minimum configuratino found
 }
 
-func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int)t {
+func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) {
     if numIter < 100000 {
         currentCost := cost(currentConfiguration, rankToRowMapArr)
         newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
