@@ -225,6 +225,7 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
+    fmt.Println(queryString)
     statement, _ := currentDatabase.Prepare(queryString)
     rows, _ := statement.Query(convertedIndices...)
     columns, _ := rows.Columns()
