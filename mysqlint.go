@@ -15,6 +15,7 @@ func mysqlInitDB(db *DB){
 }
 
 func cost(clusterConfiguration []int, rowToRankMapArr []map[int]int) int {
+    fmt.Println("starting calculation")
     weights := []int{1, 1, 1}
     coefficients := []int{0, 0, 0}
 
@@ -57,6 +58,7 @@ func cost(clusterConfiguration []int, rowToRankMapArr []map[int]int) int {
      for i := 0; i < 3; i ++ {
          finalCost += weights[i] * coefficients[i]
      }
+    fmt.Println("Done with calculation")
      return finalCost
 }
 
