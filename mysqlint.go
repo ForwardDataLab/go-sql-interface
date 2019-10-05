@@ -61,10 +61,10 @@ func cost(clusterConfiguration []int, rowToRankMapArr []map[int]int) int {
 }
 
 func calculateOptimalClusterSize(numRows int) int {
-    if numRows < 1000 {
+    if numRows < 10000 {
         return numRows / 3
     }
-    return 1000
+    return 10000
 }
 
 func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
