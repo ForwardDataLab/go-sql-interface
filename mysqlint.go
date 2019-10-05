@@ -44,6 +44,8 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
      coefficients[2] = sumDifference
      fmt.Print("coefficients: ")
      fmt.Println(coefficients)
+     fmt.Print("Associated configuration: ")
+     fmt.Println(clusterConfiguration)
      finalCost := 0
      for i := 0; i < 3; i ++ {
          finalCost += weights[i] * coefficients[i]
@@ -112,7 +114,7 @@ func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []i
     for i, v := range perm {
         shuffledConfiguration[v] = newConfiguration[i]
     }
-    fmt.Println(shuffledConfiguration)
+    // fmt.Println(shuffledConfiguration)
     return shuffledConfiguration
 }
 
