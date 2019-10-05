@@ -102,7 +102,7 @@ func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
 }
 
 func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rowToRankMapArr []map[int]int) {
-    if numIter < 100000 {
+    if numIter < 100 {
         currentCost := cost(currentConfiguration, rowToRankMapArr)
         newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
         newCost := cost(newConfiguration, rowToRankMapArr)
