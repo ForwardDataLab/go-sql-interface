@@ -201,60 +201,61 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
 }
 
 func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
-    // clusterIDs := []int{}
-    // subsetClusterMap := make(map[int]bool)
-    // rowIDMap := make(map[int]bool)
-    // for i, v := range rowAccess.Indices {
-    //     rowIDMap[v] = true
-    // }
+    clusterIDs := []int{}
+    subsetClusterMap := make(map[int]bool)
+    rowIDMap := make(map[int]bool)
+    for i, v := range rowAccess.Indices {
+        rowIDMap[v] = true
+    }
 
-    // for i, v := range rowAccess.Indices {
-    //     subsetClusterMap[db.ClusterMap[v]] = true
-    // }
+    for i, v := range rowAccess.Indices {
+        subsetClusterMap[db.ClusterMap[v]] = true
+    }
 
-    // for k, v := range subsetClusterMap {
-    //     clusterIDs = append(clusterIDs, k)
-    // }
+    for k := range subsetClusterMap {
+        clusterIDs = append(clusterIDs, k)
+    }
 
-    // convertedIndices := make([]interface{}, len(clusterIDs))
-    // for i, v := range clusterIDs {
-    //     convertedIndices[i] = v
-    // }
-    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-    //     "@/" + db.DatabaseName)
-    // queryString := "SELECT * FROM " +
-    //     db.Table +
-    //     " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
-    // statement, _ := currentDatabase.Prepare(queryString)
-    // rows, _ := statement.Query(convertedIndices...)
-    // columns, _ := rows.Columns()
-    // values := make([]sql.RawBytes, len(columns))
-    // defer rows.Close()
-    // fetchedArr := make([]interface{}, len(values))
-    // for i := range values {
-    //     fetchedArr[i] = &(values[i])
-    // }
+    convertedIndices := make([]interface{}, len(clusterIDs))
+    for i, v := range clusterIDs {
+        convertedIndices[i] = v
+    }
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@/" + db.DatabaseName)
+    queryString := "SELECT * FROM " +
+        db.Table +
+        " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
+    statement, _ := currentDatabase.Prepare(queryString)
+    rows, _ := statement.Query(convertedIndices...)
+    columns, _ := rows.Columns()
+    values := make([]sql.RawBytes, len(columns))
+    defer rows.Close()
+    fetchedArr := make([]interface{}, len(values))
+    for i := range values {
+        fetchedArr[i] = &(values[i])
+    }
 
-    // returnArr := [][]string{}
-    // for rows.Next() {
-    //     rows.Scan(fetchedArr...)
-    //     currentArr := []string{}
-    //     for _, v := range values {
-    //         if v == nil {
-    //             currentArr = append(currentArr, "NULL")
-    //         } else {
-    //             currentArr = append(currentArr, string(v))
-    //         }
-    //     }
-    //     returnArr = append(returnArr, currentArr)
-    // }
+    returnArr := [][]string{}
+    for rows.Next() {
+        rows.Scan(fetchedArr...)
+        currentArr := []string{}
+        for _, v := range values {
+            if v == nil {
+                currentArr = append(currentArr, "NULL")
+            } else {
+                currentArr = append(currentArr, string(v))
+            }
+        }
+        returnArr = append(returnArr, currentArr)
+    }
     filteredArr := [][]string{}
     // // PERFORM FILTERING BASED ON rowAccess.Indices
-    // for i, v := range returnArr {
-    //     if val, ok = rowIDMap[v[0]]; ok {
-    //         filteredArr = append(filteredArr, v)
-    //     }
-    // }
+    for _, v := range returnArr {
+        index, _ := strconv.ParseInt(v[0], 10, 64)
+        if _, ok := rowIDMap[int(index)]; ok {
+            filteredArr = append(filteredArr, v)
+        }
+    }
 
     return filteredArr
 }
