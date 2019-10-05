@@ -49,8 +49,8 @@ func cost(clusterConfiguration []int, rowToRankMapArr []map[int]int) int {
      coefficients[0] = currentMaxSize
      coefficients[1] = len(clusterMapping)
      coefficients[2] = sumDifference
-     // fmt.Print("coefficients: ")
-     // fmt.Println(coefficients)
+     fmt.Print("coefficients: ")
+     fmt.Println(coefficients)
      // fmt.Print("Associated configuration: ")
      // fmt.Println(clusterConfiguration)
      finalCost := 0
