@@ -77,7 +77,7 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
 }
 
 func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
-    if numIter > 50 {
+    if numIter > 100000 {
         return -1;
     }
     currentCost := cost(currentConfiguration, rankToRowMapArr)
