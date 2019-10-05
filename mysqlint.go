@@ -92,11 +92,13 @@ func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
     currentTransaction, _ := currentDatabase.Begin()
+    fmt.Println("Beginning transaction")
     for i, v := range db.newConfiguration {
         updateString := "UPDATE " + db.Table + " SET cluster_id = ? WHERE id = ?"
         updateStatement, _ := currentTransaction.Prepare(updateString)
         updateStatement.Exec(v, i + 1)
     }
+    fmt.Println("End transaction")
     currentTransaction.Commit()
     // set the db.ClusterMap to the minimum configuratino found
 }
