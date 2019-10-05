@@ -236,7 +236,6 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
         db.Table +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
     statement, _ := currentDatabase.Prepare(queryString)
-    fmt.Println(convertedIndices)
     rows, _ := statement.Query(convertedIndices...)
     columns, _ := rows.Columns()
     values := make([]sql.RawBytes, len(columns))
@@ -261,8 +260,11 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
     }
     filteredArr := [][]string{}
     // // PERFORM FILTERING BASED ON rowAccess.Indices
+    fmt.Println(returnArr)
+    fmt.Println(rowIDMap)
     for _, v := range returnArr {
         index, _ := strconv.ParseInt(v[0], 10, 64)
+        fmt.Println(index)
         if _, ok := rowIDMap[int(index)]; ok {
             filteredArr = append(filteredArr, v)
         }
