@@ -71,7 +71,8 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
         }
     }
     pickMinimumCost(db, currentMinimumConfiguration, 0, db.NumClusters, rankToRowMapArr)
-    fmt.Print(db.newConfiguration)
+    fmt.Print("New configuration: ")
+    fmt.Println(db.newConfiguration)
     // set the db.ClusterMap to the minimum configuratino found
 }
 
@@ -106,7 +107,7 @@ func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []i
     for i, v := range perm {
         shuffledConfiguration[v] = newConfiguration[i]
     }
-    fmt.Println(shuffledConfiguration)
+    // fmt.Println(shuffledConfiguration)
     return shuffledConfiguration
 }
 
