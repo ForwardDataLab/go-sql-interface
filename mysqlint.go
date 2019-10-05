@@ -39,8 +39,9 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
              fmt.Print(i)
              fmt.Print("v: ")
              fmt.Print(v)
-             fmt.Print("mapping[i]: ")
-             fmt.Println(mapping[i])
+             fmt.Print("mapping[i + 1]: ")
+             fmt.Println(mapping[i + 1])
+             fmt.Println(v - mapping[i + 1])
              sumDifference += ((v - mapping[i + 1]) * (v - mapping[i + 1]))
          }
      }
