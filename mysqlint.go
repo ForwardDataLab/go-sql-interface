@@ -85,14 +85,14 @@ func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numCluster
     currentCost := cost(currentConfiguration, rankToRowMapArr)
     newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
     newCost := pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
-    fmt.Print("proposed configuration: ")
-    fmt.Println(newConfiguration)
-    fmt.Print("cost of proposed configuration: ")
-    fmt.Println(newCost)
     if newCost == -1 {
         return currentCost
     }
     if newCost < currentCost {
+        fmt.Print("proposed configuration: ")
+        fmt.Println(newConfiguration)
+        fmt.Print("cost of proposed configuration: ")
+        fmt.Println(newCost)
         db.newConfiguration = newConfiguration
     }
     return min(currentCost, newCost)
