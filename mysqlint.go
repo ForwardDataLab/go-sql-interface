@@ -42,6 +42,8 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
      coefficients[0] = currentMaxSize
      coefficients[1] = len(clusterMapping)
      coefficients[2] = sumDifference
+     fmt.Print("coefficients: ")
+     fmt.Prinln(coefficients)
      finalCost := 0
      for i := 0; i < 3; i ++ {
          finalCost += weights[i] * coefficients[i]
