@@ -204,11 +204,11 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
     clusterIDs := []int{}
     subsetClusterMap := make(map[int]bool)
     rowIDMap := make(map[int]bool)
-    for i, v := range rowAccess.Indices {
+    for _, v := range rowAccess.Indices {
         rowIDMap[v] = true
     }
 
-    for i, v := range rowAccess.Indices {
+    for _, v := range rowAccess.Indices {
         subsetClusterMap[db.ClusterMap[v]] = true
     }
 
