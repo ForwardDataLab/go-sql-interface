@@ -35,13 +35,13 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
     sumDifference := 0
      for _, mapping := range rankToRowMapArr {
          for i, v := range clusterConfiguration {
-             fmt.Print("i: ")
-             fmt.Print(i)
-             fmt.Print("v: ")
-             fmt.Print(v)
-             fmt.Print("mapping[i + 1]: ")
-             fmt.Println(mapping[i + 1])
-             fmt.Println(v - mapping[i + 1])
+             // fmt.Print("i: ")
+             // fmt.Print(i)
+             // fmt.Print("v: ")
+             // fmt.Print(v)
+             // fmt.Print("mapping[i + 1]: ")
+             // fmt.Println(mapping[i + 1])
+             // fmt.Println(v - mapping[i + 1])
              sumDifference += ((v - mapping[i + 1]) * (v - mapping[i + 1]))
          }
      }
@@ -49,10 +49,10 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
      coefficients[0] = currentMaxSize
      coefficients[1] = len(clusterMapping)
      coefficients[2] = sumDifference
-     fmt.Print("coefficients: ")
-     fmt.Println(coefficients)
-     fmt.Print("Associated configuration: ")
-     fmt.Println(clusterConfiguration)
+     // fmt.Print("coefficients: ")
+     // fmt.Println(coefficients)
+     // fmt.Print("Associated configuration: ")
+     // fmt.Println(clusterConfiguration)
      finalCost := 0
      for i := 0; i < 3; i ++ {
          finalCost += weights[i] * coefficients[i]
