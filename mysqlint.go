@@ -79,23 +79,19 @@ currentMinimumConfiguration := make([]int, len(rankToRowMapArr[0]))
 }
 
 func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numClusters int, rankToRowMapArr []map[int]int) int {
-    if numIter > 100000 {
-        return -1;
+    if numIter < 100000 {
+        currentCost := cost(currentConfiguration, rankToRowMapArr)
+        newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
+        newCost := cost(newConfiguration, rankToRowMapArr)
+        if newCost < currentCost {
+            fmt.Print("proposed configuration: ")
+            fmt.Println(newConfiguration)
+            fmt.Print("cost of proposed configuration: ")
+            fmt.Println(newCost)
+            db.newConfiguration = newConfiguration
+        }
+        pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
     }
-    currentCost := cost(currentConfiguration, rankToRowMapArr)
-    newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
-    newCost := pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
-    if newCost == -1 {
-        return currentCost
-    }
-    if newCost < currentCost {
-        fmt.Print("proposed configuration: ")
-        fmt.Println(newConfiguration)
-        fmt.Print("cost of proposed configuration: ")
-        fmt.Println(newCost)
-        db.newConfiguration = newConfiguration
-    }
-    return min(currentCost, newCost)
 }
 
 func getConfiguration(lengthConfiguration int, numIter int, numClusters int) []int {
