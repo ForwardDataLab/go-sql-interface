@@ -27,7 +27,7 @@ func cost(clusterConfiguration []int, rankToRowMapArr []map[int]int) int {
         }
     }
     currentMaxSize := 0
-    for _, v := range clusterConfiguration {
+    for _, v := range clusterMapping {
         if v > currentMaxSize {
             currentMaxSize = v
         }
@@ -83,6 +83,10 @@ func pickMinimumCost(db *DB, currentConfiguration []int, numIter int, numCluster
     currentCost := cost(currentConfiguration, rankToRowMapArr)
     newConfiguration := getConfiguration(len(currentConfiguration), numIter, numClusters)
     newCost := pickMinimumCost(db, newConfiguration, numIter + 1, numClusters, rankToRowMapArr)
+    fmt.Print("proposed configuration: ")
+    fmt.Println(newConfiguration)
+    fmt.Print("cost of proposed configuration: ")
+    fmt.Println(newCost)
     if newCost == -1 {
         return currentCost
     }
