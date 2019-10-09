@@ -325,6 +325,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
         } else if v.Type == "bool" {
             insertCell[i], _ = strconv.ParseBool(v.Value)
         } else {
+            fmt.Println(v.Type)
             return -1
         }
     }
