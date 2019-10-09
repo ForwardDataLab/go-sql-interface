@@ -54,10 +54,10 @@ func (db DB) InsertRow(indexCol string, cells []Cell) int {
 }
 
 // DeleteRow : delets a row from the database
-func (db DB) DeleteRow(index int) {
+func (db DB) DeleteRow(indexCol string, index int) {
     // DELETE FROM table_name WHERE index_col = index
     if(db.DbType == "mysql") {
-        mysqlDeleteRow(db, index)
+        mysqlDeleteRow(db, indexCol, index)
     } else if (db.DbType == "postgres") {
         postgresDeleteRow(db, index)
     } else {
