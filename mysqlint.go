@@ -276,14 +276,14 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
 }
 
 func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
-    return mysqlGetRowsCluster(db, rowAccess)
+    return mysqlGetRowsBatch(db, rowAccess)
 }
 
 func mysqlGetColMap(db DB) []string {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
-    columnQueryString := "SELECT * FROM " + db.Table+ " LIMIT 1"
+    columnQueryString := "SELECT * FROM " + db.Table + " LIMIT 1"
     rows, _ := currentDatabase.Query(columnQueryString)
     columns, _ := rows.Columns()
     return columns
@@ -333,13 +333,13 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
     return maxIndex + 1
 }
 
-func mysqlDeleteRow(db DB, index int) {
+func mysqlDeleteRow(db DB, indexCol string, index int) {
     // DELETE FROM table_name WHERE index_col = index
-    // currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-    //     "@/" + db.DatabaseName)
-    // deleteQueryString := "DELETE FROM " +
-    //     db.Table +
-    //     "WHERE INDEX_COL = ?"
-    // deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
-    // _, _ = deleteStatement.Exec(index)
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@/" + db.DatabaseName)
+    deleteQueryString := "DELETE FROM " +
+        db.Table +
+        "WHERE " + indexCol + " = ?"
+    deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
+    _, _ = deleteStatement.Exec(index)
 }

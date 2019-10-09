@@ -92,7 +92,7 @@ func (db DB) GetRowsSerial(rowAccess RowAccess) [][]string {
 // GetRowsCluster : fetches rows from DB in cluters
 func (db DB) GetRowsCluster(rowAccess RowAccess) [][]string {
     if(db.DbType == "mysql") {
-        return mysqlGetRowsCluster(db, rowAccess)
+        return mysqlGetRows(db, rowAccess)
     } else if (db.DbType == "postgres") {
         return postgresGetRows(db, rowAccess)
     } else {
