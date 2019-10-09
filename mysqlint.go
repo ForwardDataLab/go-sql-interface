@@ -340,9 +340,7 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
         "@/" + db.DatabaseName)
     deleteQueryString := "DELETE FROM " +
         db.Table +
-        "WHERE " + indexCol + " = ?"
-    fmt.Println(deleteQueryString)
-    deleteStatement, err := currentDatabase.Prepare(deleteQueryString)
-    fmt.Println(err)
+        " WHERE " + indexCol + " = ?"
+    deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
     _, _ = deleteStatement.Exec(index)
 }
