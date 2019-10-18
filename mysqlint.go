@@ -315,6 +315,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
 
     for i, v := range cells {
         if v.Type == "ID" {
+            fmt.Println(v.Value)
             if exists {
                 insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
             } else {
