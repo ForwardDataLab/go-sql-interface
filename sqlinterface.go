@@ -65,6 +65,18 @@ func (db DB) DeleteRow(indexCol string, index int) {
     }
 }
 
+// UpdateRow : updates a row from the database
+func (db DB) UpdateRow(indexCol string, cells []Cell) {
+    // UPDATE table_name WHERE index_col = index
+    if(db.DbType == "mysql") {
+        mysqlUpdateRow(db, indexCol, cells)
+    } else if (db.DbType == "postgres") {
+        // update but postgres
+    } else {
+        // should panic or do proper error throwing
+    }
+}
+
 // GetRowsBatch : fetches rows from DB in batches
 func (db DB) GetRowsBatch(rowAccess RowAccess) [][]string {
     if(db.DbType == "mysql") {

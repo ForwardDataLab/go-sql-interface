@@ -344,3 +344,15 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
     deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
     _, _ = deleteStatement.Exec(index)
 }
+
+func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
+    idIndex := -1
+    for i, v := range cells {
+        if v.Type == "ID" {
+            idIndex = i
+            break
+        }
+    }
+    mysqlDeleteRow(db, indexCol, cells[idIndex])
+    mysqlInsertRow(db, indexCol, cells)
+}
