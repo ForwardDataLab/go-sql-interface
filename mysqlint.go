@@ -346,13 +346,13 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
 }
 
 func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
-    idIndex := -1
-    for i, v := range cells {
+    var idIndex int64
+    for _, v := range cells {
         if v.Type == "ID" {
-            idIndex = i
+            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
             break
         }
     }
-    mysqlDeleteRow(db, indexCol, cells[idIndex])
+    mysqlDeleteRow(db, indexCol, int(idIndex))
     mysqlInsertRow(db, indexCol, cells)
 }
