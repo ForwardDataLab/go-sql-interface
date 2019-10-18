@@ -289,7 +289,7 @@ func mysqlGetColMap(db DB) []string {
     return columns
 }
 
-func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
+func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
@@ -315,7 +315,11 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell) int {
 
     for i, v := range cells {
         if v.Type == "ID" {
-            insertCell[i] = maxIndex + 1
+            if exists {
+                insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
+            } else {
+                insertCell[i] = maxIndex + 1
+            }
         } else if v.Type == "int" {
             insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
         } else if v.Type == "string" {
@@ -354,5 +358,5 @@ func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
         }
     }
     mysqlDeleteRow(db, indexCol, int(idIndex))
-    mysqlInsertRow(db, indexCol, cells)
+    mysqlInsertRow(db, indexCol, cells, true)
 }
