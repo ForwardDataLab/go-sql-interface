@@ -283,10 +283,14 @@ func mysqlGetColMap(db DB) []string {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
-    columnQueryString := "SELECT * FROM " + db.Table + " LIMIT 1"
+    columnQueryString := "describe " + db.Table
+    var tableMetaData TableMetaData
     rows, _ := currentDatabase.Query(columnQueryString)
-    columns, _ := rows.Columns()
-    return columns
+    for rows.Next() {
+        rows.Scan(&tableMetaData)
+        fmt.Println(tableMetaData)
+    }
+    return make([]string, 1)
 }
 
 func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {

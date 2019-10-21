@@ -26,6 +26,16 @@ type Cell struct {
     Value string
 }
 
+// TableMetadata : struct to store the result of describe table
+type TableMetadata struct {
+    Field string
+    Type string
+    Null string
+    Key string
+    Default string
+    Extra string
+}
+
 func max(a int, b int) int {
     if a > b {
         return a
