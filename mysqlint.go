@@ -288,7 +288,8 @@ func mysqlGetColMap(db DB) []string {
     rows, _ := currentDatabase.Query(columnQueryString)
     for rows.Next() {
         rows.Scan(&tableMetadata)
-        fmt.Println(tableMetadata)
+        fmt.Println(tableMetadata.Name)
+        fmt.Println(tableMetadata.Type)
     }
     return make([]string, 1)
 }
