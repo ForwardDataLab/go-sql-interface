@@ -284,11 +284,11 @@ func mysqlGetColMap(db DB) []string {
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
     columnQueryString := "describe " + db.Table
-    var tableMetaData TableMetaData
+    var tableMetadata TableMetadata
     rows, _ := currentDatabase.Query(columnQueryString)
     for rows.Next() {
-        rows.Scan(&tableMetaData)
-        fmt.Println(tableMetaData)
+        rows.Scan(&tableMetadata)
+        fmt.Println(tableMetadata)
     }
     return make([]string, 1)
 }
