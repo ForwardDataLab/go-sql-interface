@@ -1,5 +1,9 @@
 package sqlinterface
 
+import (
+        "database/sql"
+)
+
 // DB : the database struct to store information about the connection
 type DB struct {
     DbType string
@@ -28,12 +32,12 @@ type Cell struct {
 
 // TableMetadata : struct to store the result of describe table
 type TableMetadata struct {
-    Field string
-    Type string
-    Null string
-    Key string
-    Default string
-    Extra string
+    Field sql.NullString
+    Type sql.NullString
+    Null sql.NullString
+    Key sql.NullString
+    Default sql.NullString
+    Extra sql.NullString
 }
 
 func max(a int, b int) int {
