@@ -279,17 +279,16 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     return mysqlGetRowsBatch(db, rowAccess)
 }
 
-func mysqlGetColMap(db DB) []string {
+func mysqlGetColMap(db DB) []TableMetadata {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
     columnQueryString := "DESCRIBE " + db.Table
     var tableMetadata TableMetadata
     rows, err := currentDatabase.Query(columnQueryString)
-    fmt.Println(columnQueryString)
-    fmt.Println(err)
+    var returnArr []TableMetadata
     for rows.Next() {
-        err := rows.Scan(
+        rows.Scan(
             &(tableMetadata.Field),
             &(tableMetadata.Type),
             &(tableMetadata.Null),
@@ -297,10 +296,9 @@ func mysqlGetColMap(db DB) []string {
             &(tableMetadata.Default),
             &(tableMetadata.Extra),
         )
-        fmt.Println(err)
-        fmt.Println(tableMetadata)
+        returnArr = append(returnArr, tableMetadata)
     }
-    return make([]string, 1)
+    return returnArr
 }
 
 func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
