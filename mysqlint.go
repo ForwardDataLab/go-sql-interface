@@ -289,7 +289,8 @@ func mysqlGetColMap(db DB) []string {
     fmt.Println(columnQueryString)
     fmt.Println(err)
     for rows.Next() {
-        rows.Scan(&tableMetadata)
+        err := rows.Scan(&tableMetadata)
+        fmt.Println(err)
         fmt.Println(tableMetadata)
     }
     return make([]string, 1)
