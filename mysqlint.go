@@ -283,15 +283,13 @@ func mysqlGetColMap(db DB) []string {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@/" + db.DatabaseName)
-    columnQueryString := "describe " + db.Table
+    columnQueryString := "DESCRIBE " + db.Table
     var tableMetadata TableMetadata
     rows, err := currentDatabase.Query(columnQueryString)
     fmt.Println(err)
     for rows.Next() {
         rows.Scan(&tableMetadata)
         fmt.Println(tableMetadata)
-        fmt.Println(tableMetadata.Field)
-        fmt.Println(tableMetadata.Type)
     }
     return make([]string, 1)
 }
