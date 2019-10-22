@@ -2,7 +2,7 @@ package sqlinterface
 
 
 // GetColMap : gets the column mapping from DB
-func (db DB) GetColMap() []TableMetada {
+func (db DB) GetColMap() []TableMetadata {
     if(db.DbType == "mysql") {
         return mysqlGetColMap(db)
     } else if (db.DbType == "postgres") {
