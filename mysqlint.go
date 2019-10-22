@@ -285,7 +285,7 @@ func mysqlGetColMap(db DB) []TableMetadata {
         "@/" + db.DatabaseName)
     columnQueryString := "DESCRIBE " + db.Table
     var tableMetadata TableMetadata
-    rows, err := currentDatabase.Query(columnQueryString)
+    rows, _ := currentDatabase.Query(columnQueryString)
     var returnArr []TableMetadata
     for rows.Next() {
         rows.Scan(
