@@ -90,7 +90,7 @@ func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
     }
 
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     currentTransaction, _ := currentDatabase.Begin()
     fmt.Println("Beginning transaction")
     for i, v := range db.newConfiguration {
@@ -146,7 +146,7 @@ func mysqlGetRowsSerial(db DB, rowAccess RowAccess) [][]string {
         convertedIndices[i] = v
     }
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " = ?"
@@ -182,34 +182,37 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
         convertedIndices[i] = v
     }
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
     statement, _ := currentDatabase.Prepare(queryString)
-    rows, _ := statement.Query(convertedIndices...)
-    columns, _ := rows.Columns()
-    values := make([]sql.RawBytes, len(columns))
-    defer rows.Close()
-    fetchedArr := make([]interface{}, len(values))
-    for i := range values {
-        fetchedArr[i] = &(values[i])
-    }
-
-    returnArr := [][]string{}
-    for rows.Next() {
-        rows.Scan(fetchedArr...)
-        currentArr := []string{}
-        for _, v := range values {
-            if v == nil {
-                currentArr = append(currentArr, "NULL")
-            } else {
-                currentArr = append(currentArr, string(v))
-            }
+    rows, err := statement.Query(convertedIndices...)
+    if (err == nil) {
+        columns, _ := rows.Columns()
+        values := make([]sql.RawBytes, len(columns))
+        defer rows.Close()
+        fetchedArr := make([]interface{}, len(values))
+        for i := range values {
+            fetchedArr[i] = &(values[i])
         }
-        returnArr = append(returnArr, currentArr)
+
+        returnArr := [][]string{}
+        for rows.Next() {
+            rows.Scan(fetchedArr...)
+            currentArr := []string{}
+            for _, v := range values {
+                if v == nil {
+                    currentArr = append(currentArr, "NULL")
+                } else {
+                    currentArr = append(currentArr, string(v))
+                }
+            }
+            returnArr = append(returnArr, currentArr)
+        }
+        return returnArr
     }
-    return returnArr
+    return nil
 }
 
 func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
@@ -233,7 +236,7 @@ func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
         convertedIndices[i] = v
     }
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE cluster_id in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
@@ -282,7 +285,7 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
 func mysqlGetColMap(db DB) []TableMetadata {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     columnQueryString := "DESCRIBE " + db.Table
     var tableMetadata TableMetadata
     rows, _ := currentDatabase.Query(columnQueryString)
@@ -304,7 +307,7 @@ func mysqlGetColMap(db DB) []TableMetadata {
 func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.Table
     var maxIndex int
     rows, _ := currentDatabase.Query(selectMaxQueryString)
@@ -353,7 +356,7 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
 func mysqlDeleteRow(db DB, indexCol string, index int) {
     // DELETE FROM table_name WHERE index_col = index
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@/" + db.DatabaseName)
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     deleteQueryString := "DELETE FROM " +
         db.Table +
         " WHERE " + indexCol + " = ?"

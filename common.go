@@ -6,6 +6,8 @@ import (
 
 // DB : the database struct to store information about the connection
 type DB struct {
+    Host string
+    Port string
     DbType string
     Username string
     Password string
