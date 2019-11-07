@@ -367,7 +367,10 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
         db.Table +
         " WHERE " + indexCol + " = ?"
     deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
-    _, _ = deleteStatement.Exec(index)
+    _, err := deleteStatement.Exec(index)
+    if (err != nil) {
+        fmt.Println(err);
+    }
 }
 
 func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
