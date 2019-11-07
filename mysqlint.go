@@ -177,6 +177,7 @@ func mysqlGetRowsSerial(db DB, rowAccess RowAccess) [][]string {
 }
 
 func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
+    fmt.Println("called get rows batch");
     convertedIndices := make([]interface{}, len(rowAccess.Indices))
     for i, v := range rowAccess.Indices {
         convertedIndices[i] = v
