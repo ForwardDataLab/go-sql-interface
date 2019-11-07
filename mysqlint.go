@@ -310,7 +310,6 @@ func mysqlGetColMap(db DB) []TableMetadata {
         )
         returnArr = append(returnArr, tableMetadata)
     }
-    fmt.Println(returnArr);
     return returnArr
 }
 
