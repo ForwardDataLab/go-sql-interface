@@ -181,12 +181,18 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
     for i, v := range rowAccess.Indices {
         convertedIndices[i] = v
     }
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := "SELECT * FROM " +
         db.Table +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
-    statement, _ := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    statement, err := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
     rows, err := statement.Query(convertedIndices...)
     if (err == nil) {
         columns, _ := rows.Columns()
@@ -212,6 +218,7 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
         }
         return returnArr
     }
+    fmt.Println(err);
     return nil
 }
 
