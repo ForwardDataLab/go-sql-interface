@@ -190,6 +190,7 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
         fmt.Println(err);
     }
     statement, err := currentDatabase.Prepare(queryString)
+    fmt.Println(queryString);
     if (err != nil) {
         fmt.Println(err);
     }
