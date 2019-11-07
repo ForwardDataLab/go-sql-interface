@@ -298,7 +298,6 @@ func mysqlGetColMap(db DB) []TableMetadata {
     columnQueryString := "DESCRIBE " + db.Table
     var tableMetadata TableMetadata
     rows, _ := currentDatabase.Query(columnQueryString)
-    fmt.Println(rows);
     var returnArr []TableMetadata
     for rows.Next() {
         rows.Scan(
@@ -311,6 +310,7 @@ func mysqlGetColMap(db DB) []TableMetadata {
         )
         returnArr = append(returnArr, tableMetadata)
     }
+    fmt.Println(returnArr);
     return returnArr
 }
 
