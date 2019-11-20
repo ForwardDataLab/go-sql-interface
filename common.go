@@ -26,6 +26,11 @@ type RowAccess struct {
     Indices []int
 }
 
+// ColumnAccess : struct to request columns from the database
+type ColumnAccess struct {
+    Index int
+}
+
 // Cell : struct to store an information about a cell in a row
 type Cell struct {
     Type string
