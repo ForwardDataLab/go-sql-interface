@@ -14,6 +14,45 @@ func mysqlInitDB(db *DB){
     db.fresh = true
 }
 
+func evaluateFormula(db *DB, formulaData string) [][]string {
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    queryString := formulaData
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    statement, err := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    rows, err := statement.Query()
+    if (err == nil) {
+        columns, _ := rows.Columns()
+        values := make([]sql.RawBytes, len(columns))
+        defer rows.Close()
+        fetchedArr := make([]interface{}, len(values))
+        for i := range values {
+            fetchedArr[i] = &(values[i])
+        }
+
+        returnArr := [][]string{}
+        for rows.Next() {
+            rows.Scan(fetchedArr...)
+            currentArr := []string{}
+            for _, v := range values {
+                if v == nil {
+                    currentArr = append(currentArr, "NULL")
+                } else {
+                    currentArr = append(currentArr, string(v))
+                }
+            }
+            returnArr = append(returnArr, currentArr)
+        }
+        return returnArr
+    }
+    return nil
+}
+
 func cost(clusterConfiguration []int, rowToRankMapArr []map[int]int) int {
     weights := []int{1, 1, 1}
     coefficients := []int{0, 0, 0}
