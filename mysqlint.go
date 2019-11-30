@@ -14,7 +14,7 @@ func mysqlInitDB(db *DB){
     db.fresh = true
 }
 
-func mysqlEvaluateFormula(db *DB, formulaData string) [][]string {
+func mysqlEvaluateFormula(db DB, formulaData string) [][]string {
     currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := formulaData
