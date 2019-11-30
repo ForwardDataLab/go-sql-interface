@@ -16,7 +16,7 @@ func (db DB) GetColMap() []TableMetadata {
 // EvaluateFormula : evaluates arbitrary sql statements
 func (db DB) EvaluateFormula(formulaData string) [][]string {
     if(db.DbType == "mysql") {
-        return mysqlEvaluateFormula(db, formuladata)
+        return mysqlEvaluateFormula(db, formulaData)
     } else if (db.DbType == "postgres") {
         return nil
     } else {
