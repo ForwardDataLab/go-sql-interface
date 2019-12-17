@@ -349,7 +349,7 @@ func mysqlGetColMap(db DB) []TableMetadata {
     return returnArr
 }
 
-func mysqlInsertColumn(db DB, columnName string, columnType string) {
+func mysqlInsertColumn(db DB, columnName string, columnType string) int {
     currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
     queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
@@ -364,6 +364,7 @@ func mysqlInsertColumn(db DB, columnName string, columnType string) {
     if (err != nil) {
         fmt.Println(err);
     }
+    return 0
 }
 
 func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
