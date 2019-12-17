@@ -65,6 +65,21 @@ func (db DB) InsertRow(indexCol string, cells []Cell) int {
     }
 }
 
+// InsertColumn : inserts a new column into the database
+func (db DB) InsertColumn(columnName string, columnType string) int {
+    // insert a column into db defined by columnStructure
+    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
+    if(db.DbType == "mysql") {
+        return mysqlInsertColumn(db, columnName, columnType)
+    } else if (db.DbType == "postgres") {
+        // return postgresInsertColumn(db, column)
+        return -1
+    } else {
+        // should panic or do proper error thcolumning
+        return -1
+    }
+}
+
 // DeleteRow : delets a row from the database
 func (db DB) DeleteRow(indexCol string, index int) {
     // DELETE FROM table_name WHERE index_col = index
