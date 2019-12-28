@@ -28,7 +28,7 @@ type RowAccess struct {
 
 // ColumnAccess : struct to request columns from the database
 type ColumnAccess struct {
-    Attributes []string
+    ColumnNames []string
 }
 
 // Cell : struct to store an information about a cell in a row

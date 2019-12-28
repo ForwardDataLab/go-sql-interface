@@ -38,7 +38,7 @@ func (db DB) GetRows(rowAccess RowAccess) [][]string {
 }
 
 // GetColumns : fetches columns from DB
-func (db DB) GetColumns(ColumnAccess ColumnAccess) [][]string {
+func (db DB) GetColumns(columnAccess ColumnAccess) [][]string {
     if(db.DbType == "mysql") {
         return mysqlGetColumns(db, columnAccess)
     } else if (db.DbType == "postgres") {

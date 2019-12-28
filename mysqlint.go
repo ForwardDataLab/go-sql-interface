@@ -332,14 +332,14 @@ func mysqlGetColumns(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
-    attributes := columnAccess.Attributes
-    numOfColumn := len(attributes)
+    colunmNames := columnAccess.ColumnNames
+    numOfColumn := len(colunmNames)
 
     currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
         "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
-    queryString := "SELECT " + attributes[0]
+    queryString := "SELECT " + colunmNames[0]
     for i := 1; i < numOfColumn; i ++ {
-        queryString += ", " + attributes[i]
+        queryString += ", " + colunmNames[i]
     }
 
     queryString += " FROM " + db.Table
