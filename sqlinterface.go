@@ -37,6 +37,18 @@ func (db DB) GetRows(rowAccess RowAccess) [][]string {
     }
 }
 
+// GetColumns : fetches columns from DB
+func (db DB) GetColumns(columnAccess ColumnAccess) [][]string {
+    if(db.DbType == "mysql") {
+        return mysqlGetColumns(db, columnAccess)
+    } else if (db.DbType == "postgres") {
+        return postgresGetColumns(db, columnAccess)
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
 // InitDB : initializes the database upon initial creation of workspace
 func (db *DB) InitDB() {
     // add a column called index_col

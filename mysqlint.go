@@ -327,6 +327,58 @@ func mysqlGetRows(db DB, rowAccess RowAccess) [][]string {
     return mysqlGetRowsBatch(db, rowAccess)
 }
 
+func mysqlGetColumns(db DB, columnAccess ColumnAccess) [][]string {
+    return mysqlGetColumnsBatch(db, columnAccess)
+}
+
+func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
+    colunmNames := columnAccess.ColumnNames
+    numOfColumn := len(colunmNames)
+
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    queryString := "SELECT " + colunmNames[0]
+    for i := 1; i < numOfColumn; i ++ {
+        queryString += ", " + colunmNames[i]
+    }
+
+    queryString += " FROM " + db.Table
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    statement, err := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    rows, err := statement.Query()
+    if (err == nil) {
+        columns, _ := rows.Columns()
+        values := make([]sql.RawBytes, len(columns))
+        defer rows.Close()
+        fetchedArr := make([]interface{}, len(values))
+        for i := range values {
+            fetchedArr[i] = &(values[i])
+        }
+
+        returnArr := [][]string{}
+        for rows.Next() {
+            rows.Scan(fetchedArr...)
+            currentArr := []string{}
+            for _, v := range values {
+                if v == nil {
+                    currentArr = append(currentArr, "NULL")
+                } else {
+                    currentArr = append(currentArr, string(v))
+                }
+            }
+            returnArr = append(returnArr, currentArr)
+        }
+        return returnArr
+    }
+    return nil
+}
+
+
 func mysqlGetColMap(db DB) []TableMetadata {
     // colMap := make(map[string]string)
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
