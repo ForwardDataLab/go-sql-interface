@@ -24,10 +24,12 @@ func MysqlGetRowsBatch(TableName string, currentDatabase *sql.DB, rowAccess RowA
         TableName +
         " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
     statement, err := currentDatabase.Prepare(queryString)
+    defer statement.Close()
     if (err != nil) {
         fmt.Println(err);
     }
     rows, err := statement.Query(convertedIndices...)
+    defer rows.Close()
     if (err == nil) {
         columns, _ := rows.Columns()
         values := make([]sql.RawBytes, len(columns))
@@ -50,7 +52,6 @@ func MysqlGetRowsBatch(TableName string, currentDatabase *sql.DB, rowAccess RowA
             }
             returnArr = append(returnArr, currentArr)
         }
-        rows.Close()
         return returnArr
     }
     return nil
@@ -62,6 +63,7 @@ func MysqlInsertRow(TableName string, currentDatabase *sql.DB, indexCol string, 
     selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + TableName
     var maxIndex int
     rows, _ := currentDatabase.Query(selectMaxQueryString)
+    defer rows.Close()
     for rows.Next() {
         rows.Scan(&maxIndex)
     }
@@ -71,6 +73,7 @@ func MysqlInsertRow(TableName string, currentDatabase *sql.DB, indexCol string, 
         TableName +
         " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
     insertStatement, err := currentDatabase.Prepare(insertQueryString)
+    defer insertStatement.Close()
     if err != nil {
         fmt.Println(insertQueryString)
         fmt.Println(err)
@@ -106,6 +109,7 @@ func MysqlDeleteRow(TableName string, currentDatabase *sql.DB, indexCol string, 
         TableName +
         " WHERE " + indexCol + " = ?"
     deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
+    defer deleteStatement.Close()
     _, err := deleteStatement.Exec(index)
     if (err != nil) {
         fmt.Println(err);
@@ -123,6 +127,7 @@ func MysqlGetColMap(TableName string, currentDatabase sql.DB) []TableMetadata {
     columnQueryString := "DESCRIBE " + TableName
     var tableMetadata TableMetadata
     rows, _ := currentDatabase.Query(columnQueryString)
+    defer rows.Close()
     var returnArr []TableMetadata
     for rows.Next() {
         rows.Scan(
@@ -135,7 +140,6 @@ func MysqlGetColMap(TableName string, currentDatabase sql.DB) []TableMetadata {
         )
         returnArr = append(returnArr, tableMetadata)
     }
-    rows.Close()
     return returnArr
 }
 
