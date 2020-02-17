@@ -1,5 +1,150 @@
 package sqlinterface
 
+import (
+    "database/sql"
+    "strconv"
+    "strings"
+    "fmt"
+)
+
+// OpenSQLDB: connect to mysql and return *sql.DB which is a connection pool
+func (db DB) OpenSQLDB() *sql.DB {
+    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    return currentDatabase
+}
+
+// MysqlGetRowsBatch: query rows in mysql db
+func MysqlGetRowsBatch(TableName string, currentDatabase *sql.DB, rowAccess RowAccess) [][]string {
+    convertedIndices := make([]interface{}, len(rowAccess.Indices))
+    for i, v := range rowAccess.Indices {
+        convertedIndices[i] = v
+    }
+    queryString := "SELECT * FROM " +
+        TableName +
+        " WHERE " + rowAccess.Column + " in (?" + strings.Repeat(", ?", len(convertedIndices) - 1) + ")"
+    statement, err := currentDatabase.Prepare(queryString)
+    defer statement.Close()
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    rows, err := statement.Query(convertedIndices...)
+    defer rows.Close()
+    if (err == nil) {
+        columns, _ := rows.Columns()
+        values := make([]sql.RawBytes, len(columns))
+        defer rows.Close()
+        fetchedArr := make([]interface{}, len(values))
+        for i := range values {
+            fetchedArr[i] = &(values[i])
+        }
+
+        returnArr := [][]string{}
+        for rows.Next() {
+            rows.Scan(fetchedArr...)
+            currentArr := []string{}
+            for _, v := range values {
+                if v == nil {
+                    currentArr = append(currentArr, "NULL")
+                } else {
+                    currentArr = append(currentArr, string(v))
+                }
+            }
+            returnArr = append(returnArr, currentArr)
+        }
+        return returnArr
+    }
+    return nil
+}
+
+// MysqlInsertRow: insert a row into mysql db
+func MysqlInsertRow(TableName string, currentDatabase *sql.DB, indexCol string, cells []Cell) int {
+    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
+    selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + TableName
+    var maxIndex int
+    rows, _ := currentDatabase.Query(selectMaxQueryString)
+    defer rows.Close()
+    for rows.Next() {
+        rows.Scan(&maxIndex)
+    }
+
+    // " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
+    insertQueryString := "INSERT INTO " +
+        TableName +
+        " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
+    insertStatement, err := currentDatabase.Prepare(insertQueryString)
+    defer insertStatement.Close()
+    if err != nil {
+        fmt.Println(insertQueryString)
+        fmt.Println(err)
+    }
+
+    // create interface and add max index
+    insertCell := make([]interface{}, len(cells))
+
+    for i, v := range cells {
+        if v.Type == "ID" {
+            insertCell[i] = maxIndex + 1
+        } else if v.Type == "int" {
+            insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
+        } else if v.Type == "string" {
+            insertCell[i] = string(v.Value)
+        } else if v.Type == "float" {
+            insertCell[i], _ = strconv.ParseFloat(v.Value, 64)
+        } else if v.Type == "bool" {
+            insertCell[i], _ = strconv.ParseBool(v.Value)
+        } else {
+            fmt.Println(v.Type)
+            return -1
+        }
+    }
+    _, _ = insertStatement.Exec(insertCell...)
+    return maxIndex + 1
+}
+
+// MysqlDeleteRow: delete a row in mydql db
+func MysqlDeleteRow(TableName string, currentDatabase *sql.DB, indexCol string, index int) {
+    // DELETE FROM table_name WHERE index_col = index
+    deleteQueryString := "DELETE FROM " +
+        TableName +
+        " WHERE " + indexCol + " = ?"
+    deleteStatement, _ := currentDatabase.Prepare(deleteQueryString)
+    defer deleteStatement.Close()
+    _, err := deleteStatement.Exec(index)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+}
+
+// CloseMySQLDB: close mysql database connection pool
+func CloseMySQLDB(currentDatabase sql.DB) {
+    currentDatabase.Close()
+}
+
+// GetColMap : gets the column mapping from DB
+func MysqlGetColMap(TableName string, currentDatabase sql.DB) []TableMetadata {
+    // colMap := make(map[string]string)
+    columnQueryString := "DESCRIBE " + TableName
+    var tableMetadata TableMetadata
+    rows, _ := currentDatabase.Query(columnQueryString)
+    defer rows.Close()
+    var returnArr []TableMetadata
+    for rows.Next() {
+        rows.Scan(
+            &(tableMetadata.Field),
+            &(tableMetadata.Type),
+            &(tableMetadata.Null),
+            &(tableMetadata.Key),
+            &(tableMetadata.Default),
+            &(tableMetadata.Extra),
+        )
+        returnArr = append(returnArr, tableMetadata)
+    }
+    return returnArr
+}
+
+
+
 
 // GetColMap : gets the column mapping from DB
 func (db DB) GetColMap() []TableMetadata {
