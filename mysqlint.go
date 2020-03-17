@@ -1,18 +1,116 @@
 package sqlinterface
 
 import (
-        "database/sql"
-        "fmt"
-        "math/rand"
-        "strings"
-        "strconv"
-        "time"
-        _ "github.com/go-sql-driver/mysql"
-       )
+    "database/sql"
+    "fmt"
+    _ "github.com/go-sql-driver/mysql"
+    "math/rand"
+    "strconv"
+    "strings"
+    "time"
+)
 
 func mysqlInitDB(db *DB){
     db.fresh = true
 }
+
+func mysqlBuildConnection(db *DB) *sql.DB{
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return currentDatabase
+}
+
+func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int) *sql.Stmt{
+    QueryMulString := "SELECT * FROM " + db.Table + " WHERE ID in (?"
+    for i := 1; i < numQuery; i++ {
+        QueryMulString += ", ?"
+    }
+    QueryMulString += ")"
+    QueryMulStmt, err := currentDB.Prepare(QueryMulString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return QueryMulStmt
+}
+
+func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
+    QueryMetaDataString := "DESCRIBE " + db.Table
+    MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return MetaDataStmt
+}
+
+func mysqlPrepareInsertOneRow(db *DB, currentDB *sql.DB, numOfCol int) *sql.Stmt {
+    insertString := "INSERT INTO " + db.Table + " VALUES (?"
+    for i := 1; i < numOfCol; i++ {
+        insertString += ", ?"
+    }
+    insertString += ")"
+    InsertOneStmt, err := currentDB.Prepare(insertString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return InsertOneStmt
+}
+
+func mysqlPrepareDeleteOneRow(db *DB, currentDB *sql.DB) *sql.Stmt {
+    deleteString := "DELETE FROM " + db.Table + " WHERE ID = ?"
+    DeleteOneStmt, err := currentDB.Prepare(deleteString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return DeleteOneStmt
+}
+
+func mysqlPrepareQueryMaxIndex(db *DB, currentDB *sql.DB) *sql.Stmt {
+    QueryMaxIndexString := "SELECT MAX(ID) FROM " + db.Table
+    QueryMaxIndexStmt, err := currentDB.Prepare(QueryMaxIndexString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return QueryMaxIndexStmt
+}
+
+func mysqlQueryNumOfCol(MetaDataStmt *sql.Stmt) int {
+    ColMap, err := MetaDataStmt.Query()
+    if err != nil {
+        fmt.Println(err)
+    }
+    numOfCol := 0
+    for ColMap.Next() {
+        numOfCol++
+    }
+    return numOfCol
+}
+
+func mysqlQueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
+    rows, err := QueryMaxIndexStmt.Query()
+    defer rows.Close()
+    if err != nil {
+        fmt.Println(err)
+        return 0
+    } else {
+        var values sql.RawBytes
+        var fetchedArr interface{}
+        fetchedArr = &values
+        var maxIndex int
+        for rows.Next() {
+            rows.Scan(fetchedArr)
+            maxIndex, err = strconv.Atoi(string(values))
+            if err != nil {
+                fmt.Println(err)
+            }
+        }
+        return maxIndex
+    }
+}
+
+
 
 func mysqlEvaluateFormula(db DB, formulaData string) [][]string {
     currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +

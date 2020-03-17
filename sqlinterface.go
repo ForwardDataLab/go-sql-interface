@@ -1,5 +1,108 @@
 package sqlinterface
 
+import (
+    "database/sql"
+)
+
+func (db DB)BuildConnectionPool() *sql.DB {
+    if db.DbType == "mysql" {
+        return mysqlBuildConnection(&db)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMetaData(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMetaDataStmt(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareInsertOneRow(currentDB *sql.DB, numOfCol int) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareInsertOneRow(&db, currentDB, numOfCol)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareDeleteOneRow(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareDeleteOneRow(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMaxIndex(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMaxIndex(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)QueryMetaData(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMaxIndex(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)QueryNumOfCol(QueryMetaData *sql.Stmt) int{
+    if db.DbType == "mysql" {
+        return mysqlQueryNumOfCol(QueryMetaData)
+    } else if db.DbType == "postgres" {
+        return 0
+    } else {
+        // should panic or do proper error throwing
+        return 0
+    }
+}
+
+func (db DB)QueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
+    if db.DbType == "mysql" {
+        return mysqlQueryMaxIndex(QueryMaxIndexStmt)
+    } else if db.DbType == "postgres" {
+        return 0
+    } else {
+        // should panic or do proper error throwing
+        return 0
+    }
+}
+
 
 // GetColMap : gets the column mapping from DB
 func (db DB) GetColMap() []TableMetadata {
