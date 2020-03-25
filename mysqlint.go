@@ -110,6 +110,40 @@ func mysqlQueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
     }
 }
 
+func mysqlInsertOneRow(InsertOneRowStmt *sql.Stmt, InsertPara []interface{}) {
+    InsertOneRowStmt.Exec(InsertPara...)
+}
+
+func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+    DeleteOneRowStmt.Exec(IDToDelete)
+}
+
+func mysqlUpdateRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt, Parameters []interface{}) {
+    DeleteOneRowStmt.Exec(IDToDelete)
+    InsertOneRowStmt.Exec(Parameters...)
+}
+
+
+func mysqlInsertColumn(db *sql.DB, tableName string, columnName string, columnType string) {
+    queryString := "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType;
+    statement, err := db.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    _, err = statement.Query()
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    return
+}
+
+func mysqlExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) (*sql.Rows, error) {
+    return MetaDataStmt.Query()
+}
+
+func mysqlExecureQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
+    return QueryMulStmt.Query(QueryIDs...)
+}
 
 
 func mysqlEvaluateFormula(db DB, formulaData string) [][]string {
@@ -499,24 +533,6 @@ func mysqlGetColMap(db DB) []TableMetadata {
     return returnArr
 }
 
-func mysqlInsertColumn(db DB, columnName string, columnType string) int {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
-    queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    statement, err := currentDatabase.Prepare(queryString)
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    _, err = statement.Query()
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    return 0
-}
-
 func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
@@ -580,14 +596,3 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
     }
 }
 
-func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
-    var idIndex int64
-    for _, v := range cells {
-        if v.Type == "ID" {
-            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
-            break
-        }
-    }
-    mysqlDeleteRow(db, indexCol, int(idIndex))
-    mysqlInsertRow(db, indexCol, cells, true)
-}
