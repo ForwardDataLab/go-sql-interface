@@ -141,7 +141,7 @@ func mysqlExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) (*sql.Rows, error) {
     return MetaDataStmt.Query()
 }
 
-func mysqlExecureQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
+func mysqlExecuteQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
     return QueryMulStmt.Query(QueryIDs...)
 }
 

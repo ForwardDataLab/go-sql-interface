@@ -163,9 +163,9 @@ func ExecuteMetaDataStmt(dbType string, MetaDataStmt *sql.Stmt) (*sql.Rows, erro
 }
 
 
-func ExecureQueryMulStmt(dbType string, QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
+func ExecuteQueryMulStmt(dbType string, QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
     if(dbType == "mysql") {
-        return mysqlExecureQueryMulStmt(QueryMulStmt, QueryIDs)
+        return mysqlExecuteQueryMulStmt(QueryMulStmt, QueryIDs)
     } else if (dbType == "postgres") {
         return nil, nil
     } else {
