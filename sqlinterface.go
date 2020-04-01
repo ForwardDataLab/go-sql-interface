@@ -103,20 +103,20 @@ func (db DB)QueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
     }
 }
 
-func ExecuteInsertOneRow(dbType string, InsertOneRowStmt *sql.Stmt, Parameters []interface{}) {
-    if dbType == "mysql" {
+func (db DB) ExecuteInsertOneRow(InsertOneRowStmt *sql.Stmt, Parameters []interface{}) {
+    if db.DbType == "mysql" {
         mysqlInsertOneRow(InsertOneRowStmt, Parameters)
-    } else if dbType == "postgres" {
+    } else if db.DbType == "postgres" {
 
     } else {
         // should panic or do proper error throwing
     }
 }
 
-func ExecuteDeleteOneRow(dbType string, DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
-    if dbType == "mysql" {
+func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+    if db.DbType == "mysql" {
         mysqlDeleteOneRow(DeleteOneRowStmt, IDToDelete)
-    } else if dbType == "postgres" {
+    } else if db.DbType == "postgres" {
 
     } else {
         // should panic or do proper error throwing
@@ -124,7 +124,23 @@ func ExecuteDeleteOneRow(dbType string, DeleteOneRowStmt *sql.Stmt, IDToDelete i
 }
 
 // InsertColumn : inserts a new column into the database
-func InsertColumn(db *sql.DB, dbType string, tableName string, columnName string, columnType string) {
+func (db DB) InsertColumn(columnName string, columnType string) int {
+    // insert a column into db defined by columnStructure
+    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
+    if(db.DbType == "mysql") {
+        return mysqlInsertColumn(db, columnName, columnType)
+    } else if (db.DbType == "postgres") {
+        // return postgresInsertColumn(db, column)
+        return -1
+    } else {
+        // should panic or do proper error thcolumning
+        return -1
+    }
+}
+
+/*
+// InsertColumn : inserts a new column into the database
+func InsertColumnNew(db *sql.DB, dbType string, tableName string, columnName string, columnType string) {
     // insert a column into db defined by columnStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(dbType == "mysql") {
@@ -137,12 +153,16 @@ func InsertColumn(db *sql.DB, dbType string, tableName string, columnName string
     }
 }
 
+ */
+
+
+
 // UpdateRow : updates a row from the database
-func UpdateRow(dbType string, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt, Parameters []interface{}) {
+func (db DB) UpdateRow(indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
     // UPDATE table_name WHERE index_col = index
-    if dbType == "mysql" {
-        mysqlUpdateRow(DeleteOneRowStmt, IDToDelete, InsertOneRowStmt, Parameters)
-    } else if dbType == "postgres" {
+    if db.DbType == "mysql" {
+        mysqlUpdateRow(db, indexCol, cells, DeleteOneRowStmt, IDToDelete, InsertOneRowStmt)
+    } else if db.DbType == "postgres" {
         // update but postgres
     } else {
         // should panic or do proper error throwing
@@ -150,39 +170,25 @@ func UpdateRow(dbType string, DeleteOneRowStmt *sql.Stmt, IDToDelete int, Insert
 }
 
 
-func ExecuteMetaDataStmt(dbType string, MetaDataStmt *sql.Stmt) (*sql.Rows, error) {
-    if(dbType == "mysql") {
+func (db DB) ExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
+    if(db.DbType == "mysql") {
         return mysqlExecuteMetaDataStmt(MetaDataStmt)
-    } else if (dbType == "postgres") {
+    } else if (db.DbType == "postgres") {
         // return postgresInsertColumn(db, column)
-        return nil, nil
+        return nil
     } else {
         // should panic or do proper error thcolumning
-        return nil, nil
+        return nil
     }
 }
 
 
-func ExecuteQueryMulStmt(dbType string, QueryMulStmt *sql.Stmt, QueryIDs []interface{}) (*sql.Rows, error) {
-    if(dbType == "mysql") {
-        return mysqlExecuteQueryMulStmt(QueryMulStmt, QueryIDs)
-    } else if (dbType == "postgres") {
-        return nil, nil
-    } else {
-        return nil, nil
-    }
-}
-
-
-
-// GetColMap : gets the column mapping from DB
-func (db DB) GetColMap() []TableMetadata {
+func (db DB) ExecuteQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) [][]string {
     if(db.DbType == "mysql") {
-        return mysqlGetColMap(db)
+        return mysqlExecuteQueryMulStmt(QueryMulStmt, QueryIDs)
     } else if (db.DbType == "postgres") {
         return nil
     } else {
-        // should panic or do proper error throwing
         return nil
     }
 }
@@ -237,11 +243,11 @@ func (db *DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(indexCol string, cells []Cell) int {
+func (db DB) InsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(db, indexCol, cells, false)
+        return mysqlInsertRow(indexCol, cells, maxIndex, InsertOneStmt, false)
     } else if (db.DbType == "postgres") {
         // return postgresInsertRow(db, row)
         return -1
