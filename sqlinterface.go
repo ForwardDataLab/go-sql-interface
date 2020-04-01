@@ -138,25 +138,6 @@ func (db DB) InsertColumn(columnName string, columnType string) int {
     }
 }
 
-/*
-// InsertColumn : inserts a new column into the database
-func InsertColumnNew(db *sql.DB, dbType string, tableName string, columnName string, columnType string) {
-    // insert a column into db defined by columnStructure
-    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
-    if(dbType == "mysql") {
-        mysqlInsertColumn(db, tableName, columnName, columnType)
-    } else if (dbType == "postgres") {
-        // return postgresInsertColumn(db, column)
-        return
-    } else {
-
-    }
-}
-
- */
-
-
-
 // UpdateRow : updates a row from the database
 func (db DB) UpdateRow(indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
     // UPDATE table_name WHERE index_col = index
