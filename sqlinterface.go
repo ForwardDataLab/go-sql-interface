@@ -1,14 +1,175 @@
 package sqlinterface
 
+import (
+    "database/sql"
+)
 
-// GetColMap : gets the column mapping from DB
-func (db DB) GetColMap() []TableMetadata {
-    if(db.DbType == "mysql") {
-        return mysqlGetColMap(db)
-    } else if (db.DbType == "postgres") {
+func (db DB)BuildConnectionPool() *sql.DB {
+    if db.DbType == "mysql" {
+        return mysqlBuildConnection(&db)
+    } else if db.DbType == "postgres" {
         return nil
     } else {
         // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMetaData(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMetaDataStmt(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareInsertOneRow(currentDB *sql.DB, numOfCol int) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareInsertOneRow(&db, currentDB, numOfCol)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareDeleteOneRow(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareDeleteOneRow(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)PrepareQueryMaxIndex(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMaxIndex(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)QueryMetaData(currentDB *sql.DB) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareQueryMaxIndex(&db, currentDB)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
+func (db DB)QueryNumOfCol(QueryMetaData *sql.Stmt) int{
+    if db.DbType == "mysql" {
+        return mysqlQueryNumOfCol(QueryMetaData)
+    } else if db.DbType == "postgres" {
+        return 0
+    } else {
+        // should panic or do proper error throwing
+        return 0
+    }
+}
+
+func (db DB)QueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
+    if db.DbType == "mysql" {
+        return mysqlQueryMaxIndex(QueryMaxIndexStmt)
+    } else if db.DbType == "postgres" {
+        return 0
+    } else {
+        // should panic or do proper error throwing
+        return 0
+    }
+}
+
+func (db DB) ExecuteInsertOneRow(InsertOneRowStmt *sql.Stmt, Parameters []interface{}) {
+    if db.DbType == "mysql" {
+        mysqlInsertOneRow(InsertOneRowStmt, Parameters)
+    } else if db.DbType == "postgres" {
+
+    } else {
+        // should panic or do proper error throwing
+    }
+}
+
+func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+    if db.DbType == "mysql" {
+        mysqlDeleteOneRow(DeleteOneRowStmt, IDToDelete)
+    } else if db.DbType == "postgres" {
+
+    } else {
+        // should panic or do proper error throwing
+    }
+}
+
+// InsertColumn : inserts a new column into the database
+func (db DB) InsertColumn(columnName string, columnType string) int {
+    // insert a column into db defined by columnStructure
+    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
+    if(db.DbType == "mysql") {
+        return mysqlInsertColumn(db, columnName, columnType)
+    } else if (db.DbType == "postgres") {
+        // return postgresInsertColumn(db, column)
+        return -1
+    } else {
+        // should panic or do proper error thcolumning
+        return -1
+    }
+}
+
+// UpdateRow : updates a row from the database
+func (db DB) UpdateRow(indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
+    // UPDATE table_name WHERE index_col = index
+    if db.DbType == "mysql" {
+        mysqlUpdateRow(db, indexCol, cells, DeleteOneRowStmt, IDToDelete, InsertOneRowStmt)
+    } else if db.DbType == "postgres" {
+        // update but postgres
+    } else {
+        // should panic or do proper error throwing
+    }
+}
+
+
+func (db DB) ExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
+    if(db.DbType == "mysql") {
+        return mysqlExecuteMetaDataStmt(MetaDataStmt)
+    } else if (db.DbType == "postgres") {
+        // return postgresInsertColumn(db, column)
+        return nil
+    } else {
+        // should panic or do proper error thcolumning
+        return nil
+    }
+}
+
+
+func (db DB) ExecuteQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) [][]string {
+    if(db.DbType == "mysql") {
+        return mysqlExecuteQueryMulStmt(QueryMulStmt, QueryIDs)
+    } else if (db.DbType == "postgres") {
+        return nil
+    } else {
         return nil
     }
 }
@@ -63,11 +224,11 @@ func (db *DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(indexCol string, cells []Cell) int {
+func (db DB) InsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(db, indexCol, cells, false)
+        return mysqlInsertRow(indexCol, cells, maxIndex, InsertOneStmt, false)
     } else if (db.DbType == "postgres") {
         // return postgresInsertRow(db, row)
         return -1
@@ -77,20 +238,6 @@ func (db DB) InsertRow(indexCol string, cells []Cell) int {
     }
 }
 
-// InsertColumn : inserts a new column into the database
-func (db DB) InsertColumn(columnName string, columnType string) int {
-    // insert a column into db defined by columnStructure
-    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
-    if(db.DbType == "mysql") {
-        return mysqlInsertColumn(db, columnName, columnType)
-    } else if (db.DbType == "postgres") {
-        // return postgresInsertColumn(db, column)
-        return -1
-    } else {
-        // should panic or do proper error thcolumning
-        return -1
-    }
-}
 
 // DeleteRow : delets a row from the database
 func (db DB) DeleteRow(indexCol string, index int) {
@@ -104,17 +251,6 @@ func (db DB) DeleteRow(indexCol string, index int) {
     }
 }
 
-// UpdateRow : updates a row from the database
-func (db DB) UpdateRow(indexCol string, cells []Cell) {
-    // UPDATE table_name WHERE index_col = index
-    if(db.DbType == "mysql") {
-        mysqlUpdateRow(db, indexCol, cells)
-    } else if (db.DbType == "postgres") {
-        // update but postgres
-    } else {
-        // should panic or do proper error throwing
-    }
-}
 
 // GetRowsBatch : fetches rows from DB in batches
 func (db DB) GetRowsBatch(rowAccess RowAccess) [][]string {

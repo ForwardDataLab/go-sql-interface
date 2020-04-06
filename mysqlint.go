@@ -1,18 +1,207 @@
 package sqlinterface
 
 import (
-        "database/sql"
-        "fmt"
-        "math/rand"
-        "strings"
-        "strconv"
-        "time"
-        _ "github.com/go-sql-driver/mysql"
-       )
+    "database/sql"
+    "fmt"
+    _ "github.com/go-sql-driver/mysql"
+    "math/rand"
+    "strconv"
+    "strings"
+    "time"
+)
 
 func mysqlInitDB(db *DB){
     db.fresh = true
 }
+
+func mysqlBuildConnection(db *DB) *sql.DB{
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return currentDatabase
+}
+
+func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int) *sql.Stmt{
+    QueryMulString := "SELECT * FROM " + db.Table + " WHERE ID in (?"
+    for i := 1; i < numQuery; i++ {
+        QueryMulString += ", ?"
+    }
+    QueryMulString += ")"
+    QueryMulStmt, err := currentDB.Prepare(QueryMulString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return QueryMulStmt
+}
+
+func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
+    QueryMetaDataString := "DESCRIBE " + db.Table
+    MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return MetaDataStmt
+}
+
+func mysqlPrepareInsertOneRow(db *DB, currentDB *sql.DB, numOfCol int) *sql.Stmt {
+    insertString := "INSERT INTO " + db.Table + " VALUES (?"
+    for i := 1; i < numOfCol; i++ {
+        insertString += ", ?"
+    }
+    insertString += ")"
+    InsertOneStmt, err := currentDB.Prepare(insertString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return InsertOneStmt
+}
+
+func mysqlPrepareDeleteOneRow(db *DB, currentDB *sql.DB) *sql.Stmt {
+    deleteString := "DELETE FROM " + db.Table + " WHERE ID = ?"
+    DeleteOneStmt, err := currentDB.Prepare(deleteString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return DeleteOneStmt
+}
+
+func mysqlPrepareQueryMaxIndex(db *DB, currentDB *sql.DB) *sql.Stmt {
+    QueryMaxIndexString := "SELECT MAX(ID) FROM " + db.Table
+    QueryMaxIndexStmt, err := currentDB.Prepare(QueryMaxIndexString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return QueryMaxIndexStmt
+}
+
+func mysqlQueryNumOfCol(MetaDataStmt *sql.Stmt) int {
+    ColMap, err := MetaDataStmt.Query()
+    if err != nil {
+        fmt.Println(err)
+    }
+    numOfCol := 0
+    for ColMap.Next() {
+        numOfCol++
+    }
+    return numOfCol
+}
+
+func mysqlQueryMaxIndex(QueryMaxIndexStmt *sql.Stmt) int {
+    rows, err := QueryMaxIndexStmt.Query()
+    defer rows.Close()
+    if err != nil {
+        fmt.Println(err)
+        return 0
+    } else {
+        var values sql.RawBytes
+        var fetchedArr interface{}
+        fetchedArr = &values
+        var maxIndex int
+        for rows.Next() {
+            rows.Scan(fetchedArr)
+            maxIndex, err = strconv.Atoi(string(values))
+            if err != nil {
+                fmt.Println(err)
+            }
+        }
+        return maxIndex
+    }
+}
+
+func mysqlInsertOneRow(InsertOneRowStmt *sql.Stmt, InsertPara []interface{}) {
+    InsertOneRowStmt.Exec(InsertPara...)
+}
+
+func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+    DeleteOneRowStmt.Exec(IDToDelete)
+}
+
+func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
+    var idIndex int64
+    for _, v := range cells {
+        if v.Type == "ID" {
+            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
+            break
+        }
+    }
+    db.ExecuteDeleteOneRow(DeleteOneRowStmt, int(idIndex))
+    mysqlInsertRow(indexCol, cells, int(idIndex), InsertOneRowStmt, true)
+}
+
+func mysqlInsertColumn(db DB, columnName string, columnType string) int {
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    statement, err := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    _, err = statement.Query()
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    return 0
+}
+
+func mysqlExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
+    rows, err := MetaDataStmt.Query()
+    if err != nil {
+        fmt.Println(err)
+        return nil
+    } else {
+        var tableMetadata TableMetadata
+        var returnArr []TableMetadata
+        for rows.Next() {
+            rows.Scan(
+                &(tableMetadata.Field),
+                &(tableMetadata.Type),
+                &(tableMetadata.Null),
+                &(tableMetadata.Key),
+                &(tableMetadata.Default),
+                &(tableMetadata.Extra),
+            )
+            returnArr = append(returnArr, tableMetadata)
+        }
+        return returnArr
+    }
+}
+
+func mysqlExecuteQueryMulStmt(QueryMulStmt *sql.Stmt, QueryIDs []interface{}) [][]string {
+    rows, err := QueryMulStmt.Query(QueryIDs...)
+    if (err == nil) {
+        columns, _ := rows.Columns()
+        values := make([]sql.RawBytes, len(columns))
+        defer rows.Close()
+        fetchedArr := make([]interface{}, len(values))
+        for i := range values {
+            fetchedArr[i] = &(values[i])
+        }
+
+        returnArr := [][]string{}
+        for rows.Next() {
+            rows.Scan(fetchedArr...)
+            currentArr := []string{}
+            for _, v := range values {
+                if v == nil {
+                    currentArr = append(currentArr, "NULL")
+                } else {
+                    currentArr = append(currentArr, string(v))
+                }
+            }
+            returnArr = append(returnArr, currentArr)
+        }
+        return returnArr
+    } else {
+        fmt.Println(err)
+        return nil
+    }
+}
+
 
 func mysqlEvaluateFormula(db DB, formulaData string) [][]string {
     currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
@@ -379,68 +568,7 @@ func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 
-func mysqlGetColMap(db DB) []TableMetadata {
-    // colMap := make(map[string]string)
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
-    columnQueryString := "DESCRIBE " + db.Table
-    var tableMetadata TableMetadata
-    rows, _ := currentDatabase.Query(columnQueryString)
-    var returnArr []TableMetadata
-    for rows.Next() {
-        rows.Scan(
-            &(tableMetadata.Field),
-            &(tableMetadata.Type),
-            &(tableMetadata.Null),
-            &(tableMetadata.Key),
-            &(tableMetadata.Default),
-            &(tableMetadata.Extra),
-        )
-        returnArr = append(returnArr, tableMetadata)
-    }
-    return returnArr
-}
-
-func mysqlInsertColumn(db DB, columnName string, columnType string) int {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
-    queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    statement, err := currentDatabase.Prepare(queryString)
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    _, err = statement.Query()
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    return 0
-}
-
-func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
-    // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
-    currentDatabase, _ := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
-    selectMaxQueryString := "SELECT MAX(" + indexCol + ") FROM " + db.Table
-    var maxIndex int
-    rows, _ := currentDatabase.Query(selectMaxQueryString)
-    for rows.Next() {
-        rows.Scan(&maxIndex)
-    }
-
-    // " (?" + strings.Repeat(", ?", len(cells) - 1) + ")" +
-    insertQueryString := "INSERT INTO " +
-        db.Table +
-        " VALUES (?" + strings.Repeat(", ?", len(cells) - 1) + ")"
-    insertStatement, err := currentDatabase.Prepare(insertQueryString)
-    if err != nil {
-        fmt.Println(insertQueryString)
-        fmt.Println(err)
-    }
-
-    // create interface and add max index
+func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
     insertCell := make([]interface{}, len(cells))
 
     for i, v := range cells {
@@ -451,22 +579,50 @@ func mysqlInsertRow(db DB, indexCol string, cells []Cell, exists bool) int {
                 insertCell[i] = maxIndex + 1
             }
         } else if v.Type == "int" {
-            insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
+            s, _ := strconv.ParseInt(v.Value, 10, 32)
+            insertCell[i] = sql.NullInt32{
+                Int32: int32(s),
+                Valid: true, // valid is true if it is not null
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullInt32{Valid:false}
+            }
         } else if v.Type == "string" {
-            insertCell[i] = string(v.Value)
+            insertCell[i] = sql.NullString{
+                String: string(v.Value),
+                Valid:  true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullString{Valid:false}
+            }
         } else if v.Type == "float" {
-            insertCell[i], _ = strconv.ParseFloat(v.Value, 64)
+            s, _ := strconv.ParseFloat(v.Value, 64)
+            insertCell[i] = sql.NullFloat64{
+                Float64: s,
+                Valid:   true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullFloat64{Valid:false}
+            }
         } else if v.Type == "bool" {
-            insertCell[i], _ = strconv.ParseBool(v.Value)
+            s, _ := strconv.ParseBool(v.Value)
+            insertCell[i] = sql.NullBool{
+                Bool: s,
+                Valid: true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullBool{Valid:false}
+            }
         } else {
             fmt.Println(v.Type)
             return -1
         }
-    }
-    _, _ = insertStatement.Exec(insertCell...)
 
+    }
+    _, _ = InsertOneStmt.Exec(insertCell...)
     return maxIndex + 1
 }
+
 
 func mysqlDeleteRow(db DB, indexCol string, index int) {
     // DELETE FROM table_name WHERE index_col = index
@@ -482,14 +638,3 @@ func mysqlDeleteRow(db DB, indexCol string, index int) {
     }
 }
 
-func mysqlUpdateRow(db DB, indexCol string, cells []Cell) {
-    var idIndex int64
-    for _, v := range cells {
-        if v.Type == "ID" {
-            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
-            break
-        }
-    }
-    mysqlDeleteRow(db, indexCol, int(idIndex))
-    mysqlInsertRow(db, indexCol, cells, true)
-}
