@@ -118,18 +118,9 @@ func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
-func mysqlDeleteOneColumn(db DB, ColumnName string) int {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
     queryString := "ALTER TABLE " + db.Table + " DROP COLUMN " + ColumnName;
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    statement, err := currentDatabase.Prepare(queryString)
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    _, err = statement.Query()
+    _, err := currentDB.Exec(queryString)
     if (err != nil) {
         fmt.Println(err);
     }

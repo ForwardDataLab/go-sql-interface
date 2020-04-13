@@ -123,9 +123,9 @@ func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     }
 }
 
-func (db DB) DeleteOneColumn(ColumnName string) {
+func (db *DB) DeleteOneColumn(currentDB *sql.DB, ColumnName string) {
     if db.DbType == "mysql" {
-        mysqlDeleteOneColumn(db, ColumnName)
+        mysqlDeleteOneColumn(db, currentDB, ColumnName)
     } else if db.DbType == "postgres" {
 
     } else {
