@@ -67,6 +67,15 @@ func mysqlPrepareDeleteOneRow(db *DB, currentDB *sql.DB) *sql.Stmt {
     return DeleteOneStmt
 }
 
+func mysqlPrepareDeleteOneColumn(db *DB, currentDB *sql.DB) *sql.Stmt {
+    deleteString := "ALTER TABLE " + db.Table + " DROP COLUMN ?"
+    DeleteOneStmt, err := currentDB.Prepare(deleteString)
+    if err != nil {
+        fmt.Println(err)
+    }
+    return DeleteOneStmt
+}
+
 func mysqlPrepareQueryMaxIndex(db *DB, currentDB *sql.DB) *sql.Stmt {
     QueryMaxIndexString := "SELECT MAX(ID) FROM " + db.Table
     QueryMaxIndexStmt, err := currentDB.Prepare(QueryMaxIndexString)
@@ -116,6 +125,10 @@ func mysqlInsertOneRow(InsertOneRowStmt *sql.Stmt, InsertPara []interface{}) {
 
 func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     DeleteOneRowStmt.Exec(IDToDelete)
+}
+
+func mysqlDeleteOneColumn(DeleteOneColumnStmt *sql.Stmt, ColumnName string) {
+    DeleteOneColumnStmt.Exec(ColumnName)
 }
 
 func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
