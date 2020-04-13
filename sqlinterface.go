@@ -124,11 +124,11 @@ func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
 }
 
 // InsertColumn : inserts a new column into the database
-func (db DB) InsertColumn(columnName string, columnType string) int {
+func (db DB) InsertColumn(DBPool *sql.DB, columnName string, columnType string) int {
     // insert a column into db defined by columnStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertColumn(db, columnName, columnType)
+        return mysqlInsertColumn(db, DBPool, columnName, columnType)
     } else if (db.DbType == "postgres") {
         // return postgresInsertColumn(db, column)
         return -1
@@ -139,7 +139,7 @@ func (db DB) InsertColumn(columnName string, columnType string) int {
 }
 
 // UpdateRow : updates a row from the database
-func (db DB) UpdateRow(indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
+func (db DB) UpdateRow(indexCol string, cells []interface{}, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
     // UPDATE table_name WHERE index_col = index
     if db.DbType == "mysql" {
         mysqlUpdateRow(db, indexCol, cells, DeleteOneRowStmt, IDToDelete, InsertOneRowStmt)
@@ -224,11 +224,11 @@ func (db *DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
+func (db DB) InsertRow(cells []interface{}, maxIndex int, InsertOneStmt *sql.Stmt) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(indexCol, cells, maxIndex, InsertOneStmt, false)
+        return mysqlInsertRow(cells, maxIndex, InsertOneStmt, false)
     } else if (db.DbType == "postgres") {
         // return postgresInsertRow(db, row)
         return -1

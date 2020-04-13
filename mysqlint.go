@@ -118,30 +118,14 @@ func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
-func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
-    var idIndex int64
-    for _, v := range cells {
-        if v.Type == "ID" {
-            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
-            break
-        }
-    }
-    db.ExecuteDeleteOneRow(DeleteOneRowStmt, int(idIndex))
-    mysqlInsertRow(indexCol, cells, int(idIndex), InsertOneRowStmt, true)
+func mysqlUpdateRow(db DB, indexCol string, cells []interface{}, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
+    mysqlDeleteOneRow(DeleteOneRowStmt, IDToDelete)
+    mysqlInsertRow(cells, IDToDelete, InsertOneRowStmt, true)
 }
 
-func mysqlInsertColumn(db DB, columnName string, columnType string) int {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType string) int {
     queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    statement, err := currentDatabase.Prepare(queryString)
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    _, err = statement.Query()
+    _, err := DBPool.Exec(queryString)
     if (err != nil) {
         fmt.Println(err);
     }
@@ -568,9 +552,10 @@ func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 
-func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
+func mysqlInsertRow(cells []interface{}, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
+    fmt.Println("Here is mysqlInsertRow")
+    /*
     insertCell := make([]interface{}, len(cells))
-
     for i, v := range cells {
         if v.Type == "ID" {
             if exists {
@@ -617,9 +602,9 @@ func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *
             fmt.Println(v.Type)
             return -1
         }
-
     }
-    _, _ = InsertOneStmt.Exec(insertCell...)
+ */
+    _, _ = InsertOneStmt.Exec(cells...)
     return maxIndex + 1
 }
 
