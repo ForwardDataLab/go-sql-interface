@@ -59,17 +59,6 @@ func (db DB)PrepareDeleteOneRow(currentDB *sql.DB) *sql.Stmt {
     }
 }
 
-func (db DB)PrepareDeleteOneColumn(currentDB *sql.DB) *sql.Stmt {
-    if db.DbType == "mysql" {
-        return mysqlPrepareDeleteOneColumn(&db, currentDB)
-    } else if db.DbType == "postgres" {
-        return nil
-    } else {
-        // should panic or do proper error throwing
-        return nil
-    }
-}
-
 func (db DB)PrepareQueryMaxIndex(currentDB *sql.DB) *sql.Stmt {
     if db.DbType == "mysql" {
         return mysqlPrepareQueryMaxIndex(&db, currentDB)
@@ -134,9 +123,9 @@ func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     }
 }
 
-func (db DB) ExecuteDeleteOneColumn(DeleteOneColumnStmt *sql.Stmt, ColumnName string) {
+func (db DB) DeleteOneColumn(ColumnName string) {
     if db.DbType == "mysql" {
-        mysqlDeleteOneColumn(DeleteOneColumnStmt, ColumnName)
+        mysqlDeleteOneColumn(db, ColumnName)
     } else if db.DbType == "postgres" {
 
     } else {

@@ -67,15 +67,6 @@ func mysqlPrepareDeleteOneRow(db *DB, currentDB *sql.DB) *sql.Stmt {
     return DeleteOneStmt
 }
 
-func mysqlPrepareDeleteOneColumn(db *DB, currentDB *sql.DB) *sql.Stmt {
-    deleteString := "ALTER TABLE " + db.Table + " DROP COLUMN ?"
-    DeleteOneStmt, err := currentDB.Prepare(deleteString)
-    if err != nil {
-        fmt.Println(err)
-    }
-    return DeleteOneStmt
-}
-
 func mysqlPrepareQueryMaxIndex(db *DB, currentDB *sql.DB) *sql.Stmt {
     QueryMaxIndexString := "SELECT MAX(ID) FROM " + db.Table
     QueryMaxIndexStmt, err := currentDB.Prepare(QueryMaxIndexString)
@@ -127,8 +118,22 @@ func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
-func mysqlDeleteOneColumn(DeleteOneColumnStmt *sql.Stmt, ColumnName string) {
-    DeleteOneColumnStmt.Exec(ColumnName)
+func mysqlDeleteOneColumn(db DB, ColumnName string) int {
+    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
+        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+    queryString := "ALTER TABLE " + db.Table + " DROP COLUMN " + ColumnName;
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    statement, err := currentDatabase.Prepare(queryString)
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    _, err = statement.Query()
+    if (err != nil) {
+        fmt.Println(err);
+    }
+    return 0
 }
 
 func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
