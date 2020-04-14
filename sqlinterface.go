@@ -37,6 +37,17 @@ func (db DB)PrepareQueryMetaData(currentDB *sql.DB) *sql.Stmt {
     }
 }
 
+func (db DB)PrepareUpdateOneRow(currentDB *sql.DB, columnNames []string, idColumnName string) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareUpdateOneRow(&db, currentDB, columnNames, idColumnName)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
 func (db DB)PrepareInsertOneRow(currentDB *sql.DB, numOfCol int) *sql.Stmt {
     if db.DbType == "mysql" {
         return mysqlPrepareInsertOneRow(&db, currentDB, numOfCol)
@@ -149,10 +160,9 @@ func (db DB) InsertColumn(columnName string, columnType string) int {
 }
 
 // UpdateRow : updates a row from the database
-func (db DB) UpdateRow(indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
-    // UPDATE table_name WHERE index_col = index
+func (db DB) UpdateRow(cells []Cell, UpdateOneRowStmt *sql.Stmt) {
     if db.DbType == "mysql" {
-        mysqlUpdateRow(db, indexCol, cells, DeleteOneRowStmt, IDToDelete, InsertOneRowStmt)
+        mysqlUpdateRow(db, cells, UpdateOneRowStmt)
     } else if db.DbType == "postgres" {
         // update but postgres
     } else {
@@ -234,11 +244,11 @@ func (db *DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-func (db DB) InsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
+func (db DB) InsertRow(cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(indexCol, cells, maxIndex, InsertOneStmt, false)
+        return mysqlInsertRow(cells, maxIndex, InsertOneStmt, false)
     } else if (db.DbType == "postgres") {
         // return postgresInsertRow(db, row)
         return -1

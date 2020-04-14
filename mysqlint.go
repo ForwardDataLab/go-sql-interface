@@ -45,6 +45,21 @@ func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
     return MetaDataStmt
 }
 
+func mysqlPrepareUpdateOneRow(db *DB, currentDB *sql.DB, columnNames []string, idColumnName string) *sql.Stmt {
+    updateString := "UPDATE " + db.Table + " SET " + columnNames[0] + " = ?"
+    for i := 1; i < len(columnNames); i++ {
+        updateString += ("," + columnNames[i] + " = ?")
+    }
+    updateString += (" WHERE " + idColumnName + " = ?");
+
+    UpdateOneRowStmt, err := currentDB.Prepare(updateString)
+    if err != nil {
+        fmt.Println("update string:", updateString)
+        fmt.Println("Prepare update one row:", err)
+    }
+    return UpdateOneRowStmt
+}
+
 func mysqlPrepareInsertOneRow(db *DB, currentDB *sql.DB, numOfCol int) *sql.Stmt {
     insertString := "INSERT INTO " + db.Table + " VALUES (?"
     for i := 1; i < numOfCol; i++ {
@@ -127,16 +142,57 @@ func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
     return 0
 }
 
-func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
-    var idIndex int64
-    for _, v := range cells {
+func mysqlUpdateRow(db DB, cells []Cell, UpdateOneRowStmt *sql.Stmt) {
+    updateRow := make([]interface{}, len(cells) + 1)
+    idColumnValue := "";
+    for i, v := range cells {
         if v.Type == "ID" {
-            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
-            break
+            updateRow[i] = v.Value
+            idColumnValue = v.Value
+        } else if v.Type == "int" {
+            s, _ := strconv.ParseInt(v.Value, 10, 32)
+            updateRow[i] = sql.NullInt32{
+                Int32: int32(s),
+                Valid: true, // valid is true if it is not null
+            }
+            if (v.Value == "NULL") {
+                updateRow[i] = sql.NullInt32{Valid:false}
+            }
+        } else if v.Type == "string" {
+            updateRow[i] = sql.NullString{
+                String: string(v.Value),
+                Valid:  true,
+            }
+            if (v.Value == "NULL") {
+                updateRow[i] = sql.NullString{Valid:false}
+            }
+        } else if v.Type == "float" {
+            s, _ := strconv.ParseFloat(v.Value, 64)
+            updateRow[i] = sql.NullFloat64{
+                Float64: s,
+                Valid:   true,
+            }
+            if (v.Value == "NULL") {
+                updateRow[i] = sql.NullFloat64{Valid:false}
+            }
+        } else if v.Type == "bool" {
+            s, _ := strconv.ParseBool(v.Value)
+            updateRow[i] = sql.NullBool{
+                Bool: s,
+                Valid: true,
+            }
+            if (v.Value == "NULL") {
+                updateRow[i] = sql.NullBool{Valid:false}
+            }
+        } else {
+            fmt.Println(v.Type)
         }
+
     }
-    db.ExecuteDeleteOneRow(DeleteOneRowStmt, int(idIndex))
-    mysqlInsertRow(indexCol, cells, int(idIndex), InsertOneRowStmt, true)
+    updateRow[len(updateRow) - 1] = idColumnValue
+    if _, err := UpdateOneRowStmt.Exec(updateRow...); err != nil {
+        fmt.Println(err)
+    }
 }
 
 func mysqlInsertColumn(db DB, columnName string, columnType string) int {
@@ -577,7 +633,7 @@ func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 
-func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
+func mysqlInsertRow(cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
     insertCell := make([]interface{}, len(cells))
 
     for i, v := range cells {
