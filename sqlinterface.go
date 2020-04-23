@@ -1,7 +1,7 @@
 package sqlinterface
 
 import (
-    "database/sql"
+	"database/sql"
 )
 
 func (db DB)BuildConnectionPool() *sql.DB {
@@ -15,9 +15,9 @@ func (db DB)BuildConnectionPool() *sql.DB {
     }
 }
 
-func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int) *sql.Stmt {
+func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int, idColumn string) *sql.Stmt {
     if db.DbType == "mysql" {
-        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery)
+        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery, idColumn)
     } else if db.DbType == "postgres" {
         return nil
     } else {
@@ -124,7 +124,7 @@ func (db DB) ExecuteInsertOneRow(InsertOneRowStmt *sql.Stmt, Parameters []interf
     }
 }
 
-func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+func (db DB) ExecuteDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete interface{}) {
     if db.DbType == "mysql" {
         mysqlDeleteOneRow(DeleteOneRowStmt, IDToDelete)
     } else if db.DbType == "postgres" {

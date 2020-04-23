@@ -1,13 +1,14 @@
 package sqlinterface
 
 import (
-    "database/sql"
-    "fmt"
-    _ "github.com/go-sql-driver/mysql"
-    "math/rand"
-    "strconv"
-    "strings"
-    "time"
+	"database/sql"
+	"fmt"
+	"math/rand"
+	"strconv"
+	"strings"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func mysqlInitDB(db *DB){
@@ -23,8 +24,8 @@ func mysqlBuildConnection(db *DB) *sql.DB{
     return currentDatabase
 }
 
-func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int) *sql.Stmt{
-    QueryMulString := "SELECT * FROM " + db.Table + " WHERE ID in (?"
+func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int, idColumn string) *sql.Stmt{
+    QueryMulString := "SELECT * FROM " + db.Table + " WHERE " + idColumn + " in (?"
     for i := 1; i < numQuery; i++ {
         QueryMulString += ", ?"
     }
@@ -129,7 +130,7 @@ func mysqlInsertOneRow(InsertOneRowStmt *sql.Stmt, InsertPara []interface{}) {
     InsertOneRowStmt.Exec(InsertPara...)
 }
 
-func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete interface{}) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
@@ -363,7 +364,7 @@ func calculateOptimalClusterSize(numRows int) int {
 func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rowToRankMapArr[0]))
     if db.fresh {
-        db.ClusterMap = make(map[int]int)
+        db.ClusterMap = make(map[interface{}]int)
         db.ClusterSize = calculateOptimalClusterSize(len(rowToRankMapArr[0]))
         db.NumClusters = len(rowToRankMapArr[0]) / db.ClusterSize
         for i := 0; i < len(rowToRankMapArr[0]); i ++ {
@@ -517,7 +518,7 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
 func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
     clusterIDs := []int{}
     subsetClusterMap := make(map[int]bool)
-    rowIDMap := make(map[int]bool)
+    rowIDMap := make(map[interface{}]bool)
     for _, v := range rowAccess.Indices {
         rowIDMap[v] = true
     }

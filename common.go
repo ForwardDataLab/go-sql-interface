@@ -1,7 +1,7 @@
 package sqlinterface
 
 import (
-        "database/sql"
+	"database/sql"
 )
 
 // DB : the database struct to store information about the connection
@@ -13,7 +13,7 @@ type DB struct {
     Password string
     DatabaseName string
     Table string
-    ClusterMap map[int]int
+    ClusterMap map[interface{}]int
     ClusterSize int
     NumClusters int
     fresh bool
@@ -23,7 +23,7 @@ type DB struct {
 // RowAccess : struct to request rows from the database
 type RowAccess struct {
     Column string
-    Indices []int
+    Indices []interface{}
 }
 
 // ColumnAccess : struct to request columns from the database
