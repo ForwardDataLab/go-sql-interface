@@ -118,10 +118,18 @@ func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
-func mysqlUpdateRow(db DB, indexCol string, cells []interface{}, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
-    mysqlDeleteOneRow(DeleteOneRowStmt, IDToDelete)
-    mysqlInsertRow(cells, IDToDelete, InsertOneRowStmt, true)
+func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.Stmt, IDToDelete int, InsertOneRowStmt *sql.Stmt) {
+    var idIndex int64
+    for _, v := range cells {
+        if v.Type == "ID" {
+            idIndex, _ = strconv.ParseInt(v.Value, 10, 32)
+            break
+        }
+    }
+    db.ExecuteDeleteOneRow(DeleteOneRowStmt, int(idIndex))
+    mysqlInsertRow(indexCol, cells, int(idIndex), InsertOneRowStmt, true)
 }
+
 
 func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType string) int {
     queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
@@ -552,10 +560,61 @@ func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 
-func mysqlInsertRow(cells []interface{}, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
-    _, _ = InsertOneStmt.Exec(cells...)
+func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
+    insertCell := make([]interface{}, len(cells))
+
+    for i, v := range cells {
+        if v.Type == "ID" {
+            if exists {
+                insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
+            } else {
+                insertCell[i] = maxIndex + 1
+            }
+        } else if v.Type == "int" {
+            s, _ := strconv.ParseInt(v.Value, 10, 32)
+            insertCell[i] = sql.NullInt32{
+                Int32: int32(s),
+                Valid: true, // valid is true if it is not null
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullInt32{Valid:false}
+            }
+        } else if v.Type == "string" {
+            insertCell[i] = sql.NullString{
+                String: string(v.Value),
+                Valid:  true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullString{Valid:false}
+            }
+        } else if v.Type == "float" {
+            s, _ := strconv.ParseFloat(v.Value, 64)
+            insertCell[i] = sql.NullFloat64{
+                Float64: s,
+                Valid:   true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullFloat64{Valid:false}
+            }
+        } else if v.Type == "bool" {
+            s, _ := strconv.ParseBool(v.Value)
+            insertCell[i] = sql.NullBool{
+                Bool: s,
+                Valid: true,
+            }
+            if (v.Value == "NULL") {
+                insertCell[i] = sql.NullBool{Valid:false}
+            }
+        } else {
+            fmt.Println(v.Type)
+            return -1
+        }
+
+    }
+    _, _ = InsertOneStmt.Exec(insertCell...)
     return maxIndex + 1
 }
+
 
 
 func mysqlDeleteRow(db DB, indexCol string, index int) {
