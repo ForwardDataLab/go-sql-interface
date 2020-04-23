@@ -224,7 +224,6 @@ func (db *DB) InitDB() {
 }
 
 // InsertRow : inserts a new row into the database
-// InsertRow : inserts a new row into the database
 func (db DB) InsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')

@@ -130,7 +130,6 @@ func mysqlUpdateRow(db DB, indexCol string, cells []Cell, DeleteOneRowStmt *sql.
     mysqlInsertRow(indexCol, cells, int(idIndex), InsertOneRowStmt, true)
 }
 
-
 func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType string) int {
     queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
     _, err := DBPool.Exec(queryString)
@@ -614,7 +613,6 @@ func mysqlInsertRow(indexCol string, cells []Cell, maxIndex int, InsertOneStmt *
     _, _ = InsertOneStmt.Exec(insertCell...)
     return maxIndex + 1
 }
-
 
 
 func mysqlDeleteRow(db DB, indexCol string, index int) {
