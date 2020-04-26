@@ -24,8 +24,12 @@ func mysqlBuildConnection(db *DB) *sql.DB{
     return currentDatabase
 }
 
-func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int, idColumn string) *sql.Stmt{
-    QueryMulString := "SELECT * FROM " + db.Table + " WHERE " + idColumn + " in (?"
+func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int, idColumn string, tableMetadata []TableMetadata) *sql.Stmt{
+    QueryMulString := "SELECT " + tableMetadata[0].Field.String
+    for i := 1; i < len(tableMetadata); i ++ {
+        QueryMulString += ("," + tableMetadata[i].Field.String)
+    }
+    QueryMulString += " FROM " + db.Table + " WHERE " + idColumn + " in (?"
     for i := 1; i < numQuery; i++ {
         QueryMulString += ", ?"
     }
@@ -37,14 +41,14 @@ func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int, idColumn 
     return QueryMulStmt
 }
 
-func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
-    QueryMetaDataString := "DESCRIBE " + db.Table
-    MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
-    if err != nil {
-        fmt.Println(err)
-    }
-    return MetaDataStmt
-}
+// func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
+//     QueryMetaDataString := "DESCRIBE " + db.Table
+//     MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
+//     if err != nil {
+//         fmt.Println(err)
+//     }
+//     return MetaDataStmt
+// }
 
 func mysqlPrepareUpdateOneRow(db *DB, currentDB *sql.DB, columnNames []string, idColumnName string) *sql.Stmt {
     updateString := "UPDATE " + db.Table + " SET " + columnNames[0] + " = ?"
@@ -214,8 +218,10 @@ func mysqlInsertColumn(db DB, columnName string, columnType string) int {
     return 0
 }
 
-func mysqlExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
-    rows, err := MetaDataStmt.Query()
+func mysqlGetMetadata(db DB, currentDB *sql.DB) []TableMetadata {
+    QueryMetaDataString := "DESCRIBE " + db.Table
+    preparedMetadataQuery, err := currentDB.Prepare(QueryMetaDataString)
+    rows, err := preparedMetadataQuery.Query()
     if err != nil {
         fmt.Println(err)
         return nil

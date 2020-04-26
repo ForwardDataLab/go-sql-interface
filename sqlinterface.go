@@ -15,9 +15,9 @@ func (db DB)BuildConnectionPool() *sql.DB {
     }
 }
 
-func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int, idColumn string) *sql.Stmt {
+func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int, idColumn string, tableMetadata []TableMetadata) *sql.Stmt {
     if db.DbType == "mysql" {
-        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery, idColumn)
+        return mysqlPrepareQueryMulStmt(&db, currentDB, numQuery, idColumn, tableMetadata)
     } else if db.DbType == "postgres" {
         return nil
     } else {
@@ -26,16 +26,6 @@ func (db DB)PrepareQueryMulStmt(currentDB *sql.DB, numQuery int, idColumn string
     }
 }
 
-func (db DB)PrepareQueryMetaData(currentDB *sql.DB) *sql.Stmt {
-    if db.DbType == "mysql" {
-        return mysqlPrepareQueryMetaDataStmt(&db, currentDB)
-    } else if db.DbType == "postgres" {
-        return nil
-    } else {
-        // should panic or do proper error throwing
-        return nil
-    }
-}
 
 func (db DB)PrepareUpdateOneRow(currentDB *sql.DB, columnNames []string, idColumnName string) *sql.Stmt {
     if db.DbType == "mysql" {
@@ -81,6 +71,8 @@ func (db DB)PrepareQueryMaxIndex(currentDB *sql.DB) *sql.Stmt {
     }
 }
 
+
+// Seems like it should be deprecated
 func (db DB)QueryMetaData(currentDB *sql.DB) *sql.Stmt {
     if db.DbType == "mysql" {
         return mysqlPrepareQueryMaxIndex(&db, currentDB)
@@ -171,9 +163,9 @@ func (db DB) UpdateRow(cells []Cell, UpdateOneRowStmt *sql.Stmt) {
 }
 
 
-func (db DB) ExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
+func (db DB) GetMetadata(currentDB *sql.DB) []TableMetadata {
     if(db.DbType == "mysql") {
-        return mysqlExecuteMetaDataStmt(MetaDataStmt)
+        return mysqlGetMetadata(db, currentDB)
     } else if (db.DbType == "postgres") {
         // return postgresInsertColumn(db, column)
         return nil
