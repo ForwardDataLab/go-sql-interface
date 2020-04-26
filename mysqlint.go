@@ -195,18 +195,9 @@ func mysqlUpdateRow(db DB, cells []Cell, UpdateOneRowStmt *sql.Stmt) {
     }
 }
 
-func mysqlInsertColumn(db DB, columnName string, columnType string) int {
-    currentDatabase, err := sql.Open(db.DbType, db.Username + ":" + db.Password +
-        "@tcp(" + db.Host + ":" + db.Port + ")/" + db.DatabaseName)
+func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType string) int {
     queryString := "ALTER TABLE " + db.Table + " ADD COLUMN " + columnName + " " + columnType;
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    statement, err := currentDatabase.Prepare(queryString)
-    if (err != nil) {
-        fmt.Println(err);
-    }
-    _, err = statement.Query()
+    _, err := DBPool.Exec(queryString)
     if (err != nil) {
         fmt.Println(err);
     }

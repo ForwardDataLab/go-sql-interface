@@ -145,11 +145,11 @@ func (db *DB) DeleteOneColumn(currentDB *sql.DB, ColumnName string) {
 }
 
 // InsertColumn : inserts a new column into the database
-func (db DB) InsertColumn(columnName string, columnType string) int {
+func (db DB) InsertColumn(DBPool *sql.DB, columnName string, columnType string) int {
     // insert a column into db defined by columnStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertColumn(db, columnName, columnType)
+        return mysqlInsertColumn(db, DBPool, columnName, columnType)
     } else if (db.DbType == "postgres") {
         // return postgresInsertColumn(db, column)
         return -1
