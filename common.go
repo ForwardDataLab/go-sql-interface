@@ -33,8 +33,14 @@ type ColumnAccess struct {
 
 // Cell : struct to store an information about a cell in a row
 type Cell struct {
+	SQLType     string
     Type string
     Value string
+    Type string
+    IsNullable bool
+    DefaultValue string
+    Value string
+    IsValid bool
 }
 
 // TableMetadata : struct to store the result of describe table

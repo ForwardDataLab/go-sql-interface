@@ -38,6 +38,17 @@ func (db DB)PrepareUpdateOneRow(currentDB *sql.DB, columnNames []string, idColum
     }
 }
 
+func (db DB)PrepareUpdateCell(currentDB *sql.DB, columnName string, idColumnName string) *sql.Stmt {
+    if db.DbType == "mysql" {
+        return mysqlPrepareUpdateCell(&db, currentDB, columnName, idColumnName)
+    } else if db.DbType == "postgres" {
+        return nil
+    } else {
+        // should panic or do proper error throwing
+        return nil
+    }
+}
+
 func (db DB)PrepareInsertOneRow(currentDB *sql.DB, numOfCol int) *sql.Stmt {
     if db.DbType == "mysql" {
         return mysqlPrepareInsertOneRow(&db, currentDB, numOfCol)
@@ -162,6 +173,16 @@ func (db DB) UpdateRow(cells []Cell, UpdateOneRowStmt *sql.Stmt) {
     }
 }
 
+// UpdateCell : updates a cell from the database
+func (db DB) UpdateCell(cells Cell, rowIDToUpdate int, UpdateCellStmt *sql.Stmt) {
+    if db.DbType == "mysql" {
+        mysqlUpdateCell(db, cell, rowIDToUpdate, UpdateCellStmt)
+    } else if db.DbType == "postgres" {
+        // update but postgres
+    } else {
+        // should panic or do proper error throwing
+    }
+}
 
 func (db DB) GetMetadata(currentDB *sql.DB) []TableMetadata {
     if(db.DbType == "mysql") {

@@ -65,6 +65,18 @@ func mysqlPrepareUpdateOneRow(db *DB, currentDB *sql.DB, columnNames []string, i
     return UpdateOneRowStmt
 }
 
+func mysqlPrepareUpdateCell(db *DB, currentDB *sql.DB, columnName string, idColumnName string) *sql.Stmt {
+    updateString := "UPDATE " + db.Table + " SET " + columnName + " = ?"
+    updateString += (" WHERE " + idColumnName + " = ?");
+
+    UpdateCellStmt, err := currentDB.Prepare(updateString)
+    if err != nil {
+        fmt.Println("update string:", updateString)
+        fmt.Println("Prepare update cell", err)
+    }
+    return UpdateCellStmt
+}
+
 func mysqlPrepareInsertOneRow(db *DB, currentDB *sql.DB, numOfCol int) *sql.Stmt {
     insertString := "INSERT INTO " + db.Table + " VALUES (?"
     for i := 1; i < numOfCol; i++ {
@@ -145,6 +157,15 @@ func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
         fmt.Println(err);
     }
     return 0
+}
+
+func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate int, UpdateCellStmt *sql.Stmt) {
+    updateCellParameters := make([]interface{}, 2)
+    updateCellParameters[0] = cell.Value
+    updateCellParameters[1] = rowIDToUpdate
+    if _, err := UpdateCellStmt.Exec(updateCellParameters...); err != nil {
+        fmt.Println(err)
+    }
 }
 
 func mysqlUpdateRow(db DB, cells []Cell, UpdateOneRowStmt *sql.Stmt) {
