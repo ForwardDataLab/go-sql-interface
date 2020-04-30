@@ -174,7 +174,7 @@ func (db DB) UpdateRow(cells []Cell, UpdateOneRowStmt *sql.Stmt) {
 }
 
 // UpdateCell : updates a cell from the database
-func (db DB) UpdateCell(cells Cell, rowIDToUpdate int, UpdateCellStmt *sql.Stmt) {
+func (db DB) UpdateCell(cell Cell, rowIDToUpdate interface{}, UpdateCellStmt *sql.Stmt) {
     if db.DbType == "mysql" {
         mysqlUpdateCell(db, cell, rowIDToUpdate, UpdateCellStmt)
     } else if db.DbType == "postgres" {

@@ -159,12 +159,14 @@ func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
     return 0
 }
 
-func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate int, UpdateCellStmt *sql.Stmt) {
+func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate interface{}, UpdateCellStmt *sql.Stmt) {
     updateCellParameters := make([]interface{}, 2)
-    updateCellParameters[0] = cell.Value
+    updateCellParameters[0] = cell.UnknownTypeValue
     updateCellParameters[1] = rowIDToUpdate
+    fmt.Println(UpdateCellStmt)
+    fmt.Println(updateCellParameters)
     if _, err := UpdateCellStmt.Exec(updateCellParameters...); err != nil {
-        fmt.Println(err)
+        fmt.Println("Update cell error: ", err)
     }
 }
 

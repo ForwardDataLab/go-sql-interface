@@ -36,10 +36,9 @@ type Cell struct {
 	SQLType     string
     Type string
     Value string
-    Type string
+    UnknownTypeValue interface{}
     IsNullable bool
     DefaultValue string
-    Value string
     IsValid bool
 }
 
