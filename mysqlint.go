@@ -1,13 +1,14 @@
 package sqlinterface
 
 import (
-    "database/sql"
-    "fmt"
-    _ "github.com/go-sql-driver/mysql"
-    "math/rand"
-    "strconv"
-    "strings"
-    "time"
+	"database/sql"
+	"fmt"
+	"math/rand"
+	"strconv"
+	"strings"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func mysqlInitDB(db *DB){
@@ -23,8 +24,12 @@ func mysqlBuildConnection(db *DB) *sql.DB{
     return currentDatabase
 }
 
-func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int) *sql.Stmt{
-    QueryMulString := "SELECT * FROM " + db.Table + " WHERE ID in (?"
+func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int, idColumn string, tableMetadata []TableMetadata) *sql.Stmt{
+    QueryMulString := "SELECT " + tableMetadata[0].Field.String
+    for i := 1; i < len(tableMetadata); i ++ {
+        QueryMulString += ("," + tableMetadata[i].Field.String)
+    }
+    QueryMulString += " FROM " + db.Table + " WHERE " + idColumn + " in (?"
     for i := 1; i < numQuery; i++ {
         QueryMulString += ", ?"
     }
@@ -36,14 +41,14 @@ func mysqlPrepareQueryMulStmt(db *DB, currentDB *sql.DB, numQuery int) *sql.Stmt
     return QueryMulStmt
 }
 
-func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
-    QueryMetaDataString := "DESCRIBE " + db.Table
-    MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
-    if err != nil {
-        fmt.Println(err)
-    }
-    return MetaDataStmt
-}
+// func mysqlPrepareQueryMetaDataStmt(db *DB, currentDB *sql.DB) *sql.Stmt {
+//     QueryMetaDataString := "DESCRIBE " + db.Table
+//     MetaDataStmt, err := currentDB.Prepare(QueryMetaDataString)
+//     if err != nil {
+//         fmt.Println(err)
+//     }
+//     return MetaDataStmt
+// }
 
 func mysqlPrepareUpdateOneRow(db *DB, currentDB *sql.DB, columnNames []string, idColumnName string) *sql.Stmt {
     updateString := "UPDATE " + db.Table + " SET " + columnNames[0] + " = ?"
@@ -58,6 +63,18 @@ func mysqlPrepareUpdateOneRow(db *DB, currentDB *sql.DB, columnNames []string, i
         fmt.Println("Prepare update one row:", err)
     }
     return UpdateOneRowStmt
+}
+
+func mysqlPrepareUpdateCell(db *DB, currentDB *sql.DB, columnName string, idColumnName string) *sql.Stmt {
+    updateString := "UPDATE " + db.Table + " SET " + columnName + " = ?"
+    updateString += (" WHERE " + idColumnName + " = ?");
+
+    UpdateCellStmt, err := currentDB.Prepare(updateString)
+    if err != nil {
+        fmt.Println("update string:", updateString)
+        fmt.Println("Prepare update cell", err)
+    }
+    return UpdateCellStmt
 }
 
 func mysqlPrepareInsertOneRow(db *DB, currentDB *sql.DB, numOfCol int) *sql.Stmt {
@@ -129,7 +146,7 @@ func mysqlInsertOneRow(InsertOneRowStmt *sql.Stmt, InsertPara []interface{}) {
     InsertOneRowStmt.Exec(InsertPara...)
 }
 
-func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete int) {
+func mysqlDeleteOneRow(DeleteOneRowStmt *sql.Stmt, IDToDelete interface{}) {
     DeleteOneRowStmt.Exec(IDToDelete)
 }
 
@@ -140,6 +157,17 @@ func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
         fmt.Println(err);
     }
     return 0
+}
+
+func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate interface{}, UpdateCellStmt *sql.Stmt) {
+    updateCellParameters := make([]interface{}, 2)
+    updateCellParameters[0] = cell.UnknownTypeValue
+    updateCellParameters[1] = rowIDToUpdate
+    fmt.Println(UpdateCellStmt)
+    fmt.Println(updateCellParameters)
+    if _, err := UpdateCellStmt.Exec(updateCellParameters...); err != nil {
+        fmt.Println("Update cell error: ", err)
+    }
 }
 
 func mysqlUpdateRow(db DB, cells []Cell, UpdateOneRowStmt *sql.Stmt) {
@@ -204,8 +232,10 @@ func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType stri
     return 0
 }
 
-func mysqlExecuteMetaDataStmt(MetaDataStmt *sql.Stmt) []TableMetadata {
-    rows, err := MetaDataStmt.Query()
+func mysqlGetMetadata(db DB, currentDB *sql.DB) []TableMetadata {
+    QueryMetaDataString := "DESCRIBE " + db.Table
+    preparedMetadataQuery, err := currentDB.Prepare(QueryMetaDataString)
+    rows, err := preparedMetadataQuery.Query()
     if err != nil {
         fmt.Println(err)
         return nil
@@ -354,7 +384,7 @@ func calculateOptimalClusterSize(numRows int) int {
 func mysqlOptimizeDB(db *DB, rowToRankMapArr []map[int]int) {
     currentMinimumConfiguration := make([]int, len(rowToRankMapArr[0]))
     if db.fresh {
-        db.ClusterMap = make(map[int]int)
+        db.ClusterMap = make(map[interface{}]int)
         db.ClusterSize = calculateOptimalClusterSize(len(rowToRankMapArr[0]))
         db.NumClusters = len(rowToRankMapArr[0]) / db.ClusterSize
         for i := 0; i < len(rowToRankMapArr[0]); i ++ {
@@ -508,7 +538,7 @@ func mysqlGetRowsBatch(db DB, rowAccess RowAccess) [][]string {
 func mysqlGetRowsCluster(db DB, rowAccess RowAccess) [][]string {
     clusterIDs := []int{}
     subsetClusterMap := make(map[int]bool)
-    rowIDMap := make(map[int]bool)
+    rowIDMap := make(map[interface{}]bool)
     for _, v := range rowAccess.Indices {
         rowIDMap[v] = true
     }
