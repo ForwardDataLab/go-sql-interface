@@ -1,7 +1,7 @@
 package sqlinterface
 
 import (
-	"database/sql"
+    "database/sql"
 )
 
 // DB : the database struct to store information about the connection
@@ -34,9 +34,8 @@ type ColumnAccess struct {
 // Cell : struct to store an information about a cell in a row
 type Cell struct {
 	SQLType     string
-    Type string
-    Value string
-    UnknownTypeValue interface{}
+    Type       string
+    Value      interface{}
     IsNullable bool
     DefaultValue string
     IsValid bool

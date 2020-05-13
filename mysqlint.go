@@ -1,14 +1,14 @@
 package sqlinterface
 
 import (
-	"database/sql"
-	"fmt"
-	"math/rand"
-	"strconv"
-	"strings"
-	"time"
+    "database/sql"
+    "fmt"
+    "math/rand"
+    "strconv"
+    "strings"
+    "time"
 
-	_ "github.com/go-sql-driver/mysql"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 func mysqlInitDB(db *DB){
@@ -161,7 +161,7 @@ func mysqlDeleteOneColumn(db *DB, currentDB *sql.DB, ColumnName string) int {
 
 func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate interface{}, UpdateCellStmt *sql.Stmt) {
     updateCellParameters := make([]interface{}, 2)
-    updateCellParameters[0] = cell.UnknownTypeValue
+    updateCellParameters[0] = cell.Value
     updateCellParameters[1] = rowIDToUpdate
     fmt.Println(UpdateCellStmt)
     fmt.Println(updateCellParameters)
@@ -171,56 +171,21 @@ func mysqlUpdateCell(db DB, cell Cell, rowIDToUpdate interface{}, UpdateCellStmt
 }
 
 func mysqlUpdateRow(db DB, cells []Cell, UpdateOneRowStmt *sql.Stmt) {
-    updateRow := make([]interface{}, len(cells) + 1)
-    idColumnValue := "";
-    for i, v := range cells {
-        if v.Type == "ID" {
-            updateRow[i] = v.Value
-            idColumnValue = v.Value
-        } else if v.Type == "int" {
-            s, _ := strconv.ParseInt(v.Value, 10, 32)
-            updateRow[i] = sql.NullInt32{
-                Int32: int32(s),
-                Valid: true, // valid is true if it is not null
-            }
-            if (v.Value == "NULL") {
-                updateRow[i] = sql.NullInt32{Valid:false}
-            }
-        } else if v.Type == "string" {
-            updateRow[i] = sql.NullString{
-                String: string(v.Value),
-                Valid:  true,
-            }
-            if (v.Value == "NULL") {
-                updateRow[i] = sql.NullString{Valid:false}
-            }
-        } else if v.Type == "float" {
-            s, _ := strconv.ParseFloat(v.Value, 64)
-            updateRow[i] = sql.NullFloat64{
-                Float64: s,
-                Valid:   true,
-            }
-            if (v.Value == "NULL") {
-                updateRow[i] = sql.NullFloat64{Valid:false}
-            }
-        } else if v.Type == "bool" {
-            s, _ := strconv.ParseBool(v.Value)
-            updateRow[i] = sql.NullBool{
-                Bool: s,
-                Valid: true,
-            }
-            if (v.Value == "NULL") {
-                updateRow[i] = sql.NullBool{Valid:false}
-            }
-        } else {
-            fmt.Println(v.Type)
-        }
+   updateRow := make([]interface{}, len(cells) + 1)
+   var idColumnValue interface{};
+   for i, v := range cells {
+       if v.Type == "ID" {
+           updateRow[i] = v.Value
+           idColumnValue = v.Value
+       } else {
+           updateRow[i] = v.Value
+       }
 
-    }
-    updateRow[len(updateRow) - 1] = idColumnValue
-    if _, err := UpdateOneRowStmt.Exec(updateRow...); err != nil {
-        fmt.Println(err)
-    }
+   }
+   updateRow[len(updateRow) - 1] = idColumnValue
+   if _, err := UpdateOneRowStmt.Exec(updateRow...); err != nil {
+       fmt.Println(err)
+   }
 }
 
 func mysqlInsertColumn(db DB, DBPool *sql.DB, columnName string, columnType string) int {
@@ -654,56 +619,15 @@ func mysqlGetColumnsBatch(db DB, columnAccess ColumnAccess) [][]string {
 }
 
 
-func mysqlInsertRow(cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt, exists bool) int {
+func mysqlInsertRow(cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int {
     insertCell := make([]interface{}, len(cells))
 
     for i, v := range cells {
         if v.Type == "ID" {
-            if exists {
-                insertCell[i], _ = strconv.ParseInt(v.Value, 10, 32)
-            } else {
-                insertCell[i] = maxIndex + 1
-            }
-        } else if v.Type == "int" {
-            s, _ := strconv.ParseInt(v.Value, 10, 32)
-            insertCell[i] = sql.NullInt32{
-                Int32: int32(s),
-                Valid: true, // valid is true if it is not null
-            }
-            if (v.Value == "NULL") {
-                insertCell[i] = sql.NullInt32{Valid:false}
-            }
-        } else if v.Type == "string" {
-            insertCell[i] = sql.NullString{
-                String: string(v.Value),
-                Valid:  true,
-            }
-            if (v.Value == "NULL") {
-                insertCell[i] = sql.NullString{Valid:false}
-            }
-        } else if v.Type == "float" {
-            s, _ := strconv.ParseFloat(v.Value, 64)
-            insertCell[i] = sql.NullFloat64{
-                Float64: s,
-                Valid:   true,
-            }
-            if (v.Value == "NULL") {
-                insertCell[i] = sql.NullFloat64{Valid:false}
-            }
-        } else if v.Type == "bool" {
-            s, _ := strconv.ParseBool(v.Value)
-            insertCell[i] = sql.NullBool{
-                Bool: s,
-                Valid: true,
-            }
-            if (v.Value == "NULL") {
-                insertCell[i] = sql.NullBool{Valid:false}
-            }
+            insertCell[i] = maxIndex + 1
         } else {
-            fmt.Println(v.Type)
-            return -1
+            insertCell[i] = v.Value
         }
-
     }
     _, _ = InsertOneStmt.Exec(insertCell...)
     return maxIndex + 1

@@ -261,7 +261,7 @@ func (db DB) InsertRow(cells []Cell, maxIndex int, InsertOneStmt *sql.Stmt) int 
     // insert a row into db defined by rowStructure
     // INSERT INTO table_name (col, col, col) VALUES (NULL, 'my name', 'my group')
     if(db.DbType == "mysql") {
-        return mysqlInsertRow(cells, maxIndex, InsertOneStmt, false)
+        return mysqlInsertRow(cells, maxIndex, InsertOneStmt)
     } else if (db.DbType == "postgres") {
         // return postgresInsertRow(db, row)
         return -1
