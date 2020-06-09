@@ -20,7 +20,7 @@ func InterfaceBatchTimeTest(db DB, ra RowAccess) {
 		start := time.Now()
 		db.GetRowsBatch(ra)
 		currentTime := time.Since(start)
-		totalDuration += currentTime / 1000000
+		totalDuration += currentTime.Seconds
 		fmt.Println(currentTime)
 	}
 	fmt.Println("total average time is: ", float64(totalDuration)/float64(numIterations))
@@ -36,7 +36,7 @@ func InterfaceSerialTimeTest(db DB, ra RowAccess) {
 		start := time.Now()
 		db.GetRowsSerial(ra)
 		currentTime := time.Since(start)
-		totalDuration += currentTime / 1000000
+		totalDuration += currentTime.Seconds
 		fmt.Println(currentTime)
 	}
 	fmt.Println("total average time is: ", float64(totalDuration)/float64(numIterations))
